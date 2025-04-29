@@ -166,12 +166,12 @@ Para iniciar o desenvolvimento do projeto frontend:
 
 ```sh
 # Clonar o repositório
-git clone https://github.com/IgniusPurple/Bifrost
-cd Biofrost
+git clone https://github.com/Biofrostunie/Bifrost
+cd Bifrost
 
 #Acessar o frontend
 
-cd front
+cd frontend
 
 # Instalar dependências
 npm i
