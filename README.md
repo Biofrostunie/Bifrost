@@ -1,6 +1,12 @@
 
 # Bifrost - Sistema de Educação e Gestão Financeira
 
+##Alunos
+   - Daniel Debastiani - 2210875
+   - Luis Felipe Borges Rosa - 2211829
+   - Lucas Oliveira Santiago - 2210370
+   - Matheus de Paula Costa Cavalcante - 2210950
+     
 ## Visão Geral
 
 Bifrost é uma aplicação web moderna desenvolvida para educação financeira e gestão pessoal de finanças. O sistema permite que usuários gerenciem suas finanças pessoais, aprendam conceitos financeiros importantes e realizem simulações de investimentos.
