@@ -1,0 +1,127 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+  output   = "./node_modules/@prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model
+model User {
+  id                 String               @id @default(uuid())
+  email              String               @unique
+  password           String
+  name               String
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  incomes            Income[]
+  expenses           Expense[]
+  resetPasswordToken ResetPasswordToken?
+  investmentSims     InvestmentSimulation[]
+
+  @@map("users")
+}
+
+// Reset Password Token model
+model ResetPasswordToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  expiresAt DateTime
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@map("reset_password_tokens")
+}
+
+// Income Category model
+model IncomeCategory {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  incomes     Income[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("income_categories")
+}
+
+// Income model
+model Income {
+  id           String         @id @default(uuid())
+  amount       Float
+  description  String?
+  date         DateTime
+  userId       String
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId   String
+  category     IncomeCategory @relation(fields: [categoryId], references: [id])
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@map("incomes")
+}
+
+// Expense Category model
+model ExpenseCategory {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  expenses    Expense[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("expense_categories")
+}
+
+// Expense model
+model Expense {
+  id           String          @id @default(uuid())
+  amount       Float
+  description  String?
+  date         DateTime
+  userId       String
+  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId   String
+  category     ExpenseCategory @relation(fields: [categoryId], references: [id])
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@map("expenses")
+}
+
+// Financial Concept model (for education)
+model FinancialConcept {
+  id          String   @id @default(uuid())
+  title       String
+  content     String
+  tags        String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("financial_concepts")
+}
+
+// Investment Simulation model
+model InvestmentSimulation {
+  id                     String   @id @default(uuid())
+  userId                 String
+  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  initialAmount          Float
+  monthlyContribution    Float
+  interestRate          Float
+  timeframeYears        Int
+  compoundingFrequency  String   @default("monthly")
+  name                  String?
+  finalAmount           Float
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@map("investment_simulations")
+}
