@@ -122,7 +122,3 @@ bifrost-api/
 ## tRPC Integration
 
 The API also exposes a tRPC endpoint at `/trpc` for type-safe API calls from the frontend.
-
-## License
-
-MIT
