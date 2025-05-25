@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: ggi
+  aws:
+    secretKey: ${AWS_SECRET_KEY}
+    region: us-east-1
+    cognito:
+      appClientId: ${COGNITO_APP_CLIENT_ID}
+  security:
+    oauth2:
+      resourceServer:
+        jwt:
+          issuer-uri: https://cognito-idp.us-east-1.amazonaws.com/${COGNITO_USER_POOL_ID}
