@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -203,18 +202,18 @@ const InvestmentSimulator = () => {
         </TabsList>
         
         <TabsContent value="standard">
-          <Card className="bg-gradient-to-br from-finance-light to-[#F2FCE2]">
+          <Card className="bg-gradient-to-br from-finance-light to-[#F2FCE2] dark:from-gray-800 dark:to-gray-900">
             <CardHeader>
-              <CardTitle className="text-finance-dark flex items-center gap-2">
+              <CardTitle className="text-finance-dark dark:text-white flex items-center gap-2">
                 <TrendingUp className="h-6 w-6 text-finance-teal" />
                 Simulador de Investimentos Recorrentes
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="initial-amount" className="flex items-center gap-1">
+                    <Label htmlFor="initial-amount" className="flex items-center gap-1 text-finance-dark dark:text-white font-medium">
                       <Calculator className="h-4 w-4" /> Valor Inicial (R$)
                     </Label>
                     <Input
@@ -225,11 +224,12 @@ const InvestmentSimulator = () => {
                       placeholder="1000"
                       min="0"
                       step="100"
+                      className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="monthly-contribution" className="flex items-center gap-1">
+                    <Label htmlFor="monthly-contribution" className="flex items-center gap-1 text-finance-dark dark:text-white font-medium">
                       <PlusCircle className="h-4 w-4" /> Contribuição Mensal (R$)
                     </Label>
                     <Input
@@ -240,11 +240,12 @@ const InvestmentSimulator = () => {
                       placeholder="200"
                       min="0"
                       step="50"
+                      className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="interest-rate" className="flex items-center gap-1">
+                    <Label htmlFor="interest-rate" className="flex items-center gap-1 text-finance-dark dark:text-white font-medium">
                       <TrendingUp className="h-4 w-4" /> Taxa de Juros ao Ano (%)
                     </Label>
                     <div className="space-y-2">
@@ -257,6 +258,7 @@ const InvestmentSimulator = () => {
                         min="0"
                         max="100"
                         step="0.1"
+                        className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       />
                       <Slider
                         value={[parseFloat(interestRate) || 0]}
@@ -270,7 +272,7 @@ const InvestmentSimulator = () => {
                   </div>
                   
                   <div>
-                    <Label htmlFor="investment-period" className="flex items-center gap-1">
+                    <Label htmlFor="investment-period" className="flex items-center gap-1 text-finance-dark dark:text-white font-medium">
                       <Calendar className="h-4 w-4" /> Período de Investimento (meses)
                     </Label>
                     <div className="space-y-2">
@@ -283,6 +285,7 @@ const InvestmentSimulator = () => {
                         min="1"
                         max="480"
                         step="1"
+                        className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       />
                       <Slider
                         value={[parseInt(investmentPeriod) || 12]}
@@ -303,29 +306,29 @@ const InvestmentSimulator = () => {
                   </Button>
                 </div>
                 
-                <div className="bg-white/80 rounded-lg p-4 shadow-sm">
+                <div className="bg-white/80 dark:bg-gray-800/80 rounded-lg p-4 shadow-sm min-h-[400px] overflow-hidden">
                   {simulationResult ? (
-                    <div className="space-y-4">
-                      <h3 className="text-xl font-semibold text-finance-dark">Resultado da Simulação</h3>
+                    <div className="space-y-4 h-full">
+                      <h3 className="text-xl font-semibold text-finance-dark dark:text-white">Resultado da Simulação</h3>
                       
                       <div className="grid grid-cols-1 gap-4">
-                        <div className="bg-[#F2FCE2] p-3 rounded-md">
-                          <p className="text-sm text-finance-gray">Valor Final</p>
+                        <div className="bg-[#F2FCE2] dark:bg-gray-700 p-3 rounded-md">
+                          <p className="text-sm text-finance-gray dark:text-gray-300">Valor Final</p>
                           <p className="text-2xl font-bold text-finance-teal">
                             {formatCurrency(simulationResult.finalAmount)}
                           </p>
                         </div>
                         
                         <div className="grid grid-cols-2 gap-2">
-                          <div className="bg-finance-light p-3 rounded-md">
-                            <p className="text-sm text-finance-gray">Total Investido</p>
-                            <p className="text-lg font-semibold">
+                          <div className="bg-finance-light dark:bg-gray-700 p-3 rounded-md">
+                            <p className="text-sm text-finance-gray dark:text-gray-300">Total Investido</p>
+                            <p className="text-lg font-semibold dark:text-white">
                               {formatCurrency(simulationResult.totalInvested)}
                             </p>
                           </div>
                           
-                          <div className="bg-finance-light p-3 rounded-md">
-                            <p className="text-sm text-finance-gray">Juros Acumulados</p>
+                          <div className="bg-finance-light dark:bg-gray-700 p-3 rounded-md">
+                            <p className="text-sm text-finance-gray dark:text-gray-300">Juros Acumulados</p>
                             <p className="text-lg font-semibold text-finance-blue">
                               {formatCurrency(simulationResult.totalInterest)}
                             </p>
@@ -333,54 +336,31 @@ const InvestmentSimulator = () => {
                         </div>
                       </div>
                       
-                      <div>
-                        <h4 className="text-sm font-medium text-finance-gray mb-2">
+                      <div className="flex-1 min-h-0">
+                        <h4 className="text-sm font-medium text-finance-gray dark:text-gray-300 mb-2">
                           Evolução do Investimento
                         </h4>
-                        <div className="h-64 mt-4">
-                          <ChartContainer
-                            className="h-64"
-                            config={{
-                              total: {
-                                label: "Valor Total",
-                                theme: {
-                                  light: "#4CAF50",
-                                  dark: "#6AE06E"
-                                }
-                              },
-                              invested: {
-                                label: "Investido",
-                                theme: {
-                                  light: "#2196F3",
-                                  dark: "#64B5F6"
-                                }
-                              }
-                            }}
-                          >
+                        <div className="w-full h-48 overflow-hidden">
+                          <ResponsiveContainer width="100%" height="100%">
                             <AreaChart
                               data={simulationResult.monthlyBreakdown}
-                              margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                              margin={{ top: 10, right: 20, left: 20, bottom: 20 }}
                             >
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis 
                                 dataKey="month" 
                                 tickFormatter={formatXAxis}
-                                label={{ value: 'Meses', position: 'insideBottomRight', offset: -10 }}
+                                fontSize={12}
                               />
                               <YAxis 
                                 tickFormatter={formatYAxis} 
-                                label={{ value: 'Valor (R$)', angle: -90, position: 'insideLeft' }}
+                                fontSize={12}
                               />
-                              <ChartTooltip
-                                content={
-                                  <ChartTooltipContent
-                                    formatter={(value, name) => {
-                                      return [`${formatCurrency(value as number)}`, name === 'value' ? 'Valor Total' : 'Investido']
-                                    }}
-                                  />
-                                }
+                              <Tooltip
+                                formatter={(value, name) => {
+                                  return [`${formatCurrency(value as number)}`, name === 'value' ? 'Valor Total' : 'Investido']
+                                }}
                               />
-                              <Legend />
                               <Area 
                                 type="monotone" 
                                 dataKey="invested" 
@@ -396,12 +376,12 @@ const InvestmentSimulator = () => {
                                 fill="#4CAF50" 
                               />
                             </AreaChart>
-                          </ChartContainer>
+                          </ResponsiveContainer>
                         </div>
                       </div>
                     </div>
                   ) : (
-                    <div className="h-full flex items-center justify-center text-finance-gray p-4 text-center">
+                    <div className="h-full flex items-center justify-center text-finance-gray dark:text-gray-300 p-4 text-center">
                       <div>
                         <TrendingUp size={40} className="mx-auto text-finance-teal/40 mb-2" />
                         <p>Preencha os dados ao lado e clique em "Simular Investimento" para ver os resultados</p>
@@ -415,18 +395,18 @@ const InvestmentSimulator = () => {
         </TabsContent>
         
         <TabsContent value="goal">
-          <Card className="bg-gradient-to-br from-finance-light to-[#F2FCE2]">
+          <Card className="bg-gradient-to-br from-finance-light to-[#F2FCE2] dark:from-gray-800 dark:to-gray-900">
             <CardHeader>
-              <CardTitle className="text-finance-dark flex items-center gap-2">
+              <CardTitle className="text-finance-dark dark:text-white flex items-center gap-2">
                 <Target className="h-6 w-6 text-finance-teal" />
                 Simulador de Metas Financeiras
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <Label htmlFor="goal-name" className="flex items-center gap-1">
+                    <Label htmlFor="goal-name" className="flex items-center gap-1 text-finance-dark dark:text-white font-medium">
                       <Target className="h-4 w-4" /> Nome da Meta
                     </Label>
                     <Input
@@ -435,11 +415,12 @@ const InvestmentSimulator = () => {
                       value={goalName}
                       onChange={(e) => setGoalName(e.target.value)}
                       placeholder="Ex: Viagem, Casa, Carro..."
+                      className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     />
                   </div>
                 
                   <div>
-                    <Label htmlFor="goal-amount" className="flex items-center gap-1">
+                    <Label htmlFor="goal-amount" className="flex items-center gap-1 text-finance-dark dark:text-white font-medium">
                       <Target className="h-4 w-4" /> Valor da Meta (R$)
                     </Label>
                     <Input
@@ -450,11 +431,12 @@ const InvestmentSimulator = () => {
                       placeholder="10000"
                       min="0"
                       step="1000"
+                      className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="goal-initial-amount" className="flex items-center gap-1">
+                    <Label htmlFor="goal-initial-amount" className="flex items-center gap-1 text-finance-dark dark:text-white font-medium">
                       <Calculator className="h-4 w-4" /> Valor Inicial (R$)
                     </Label>
                     <Input
@@ -465,11 +447,12 @@ const InvestmentSimulator = () => {
                       placeholder="1000"
                       min="0"
                       step="100"
+                      className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="goal-monthly-contribution" className="flex items-center gap-1">
+                    <Label htmlFor="goal-monthly-contribution" className="flex items-center gap-1 text-finance-dark dark:text-white font-medium">
                       <PlusCircle className="h-4 w-4" /> Contribuição Mensal (R$)
                     </Label>
                     <Input
@@ -480,11 +463,12 @@ const InvestmentSimulator = () => {
                       placeholder="200"
                       min="0"
                       step="50"
+                      className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     />
                   </div>
                   
                   <div>
-                    <Label htmlFor="goal-interest-rate" className="flex items-center gap-1">
+                    <Label htmlFor="goal-interest-rate" className="flex items-center gap-1 text-finance-dark dark:text-white font-medium">
                       <TrendingUp className="h-4 w-4" /> Taxa de Juros ao Ano (%)
                     </Label>
                     <div className="space-y-2">
@@ -497,6 +481,7 @@ const InvestmentSimulator = () => {
                         min="0"
                         max="100"
                         step="0.1"
+                        className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       />
                       <Slider
                         value={[parseFloat(goalInterestRate) || 0]}
@@ -517,19 +502,19 @@ const InvestmentSimulator = () => {
                   </Button>
                 </div>
                 
-                <div className="bg-white/80 rounded-lg p-4 shadow-sm">
+                <div className="bg-white/80 dark:bg-gray-800/80 rounded-lg p-4 shadow-sm min-h-[400px] overflow-hidden">
                   {goalSimulationResult ? (
-                    <div className="space-y-4">
-                      <h3 className="text-xl font-semibold text-finance-dark">
+                    <div className="space-y-4 h-full">
+                      <h3 className="text-xl font-semibold text-finance-dark dark:text-white">
                         Resultado para {goalName || "sua meta"}
                       </h3>
                       
                       <div className="grid grid-cols-1 gap-4">
-                        <div className="bg-[#F2FCE2] p-3 rounded-md">
+                        <div className="bg-[#F2FCE2] dark:bg-gray-700 p-3 rounded-md">
                           <div className="flex justify-between items-center">
                             <div>
-                              <p className="text-sm text-finance-gray">Tempo para alcançar</p>
-                              <p className="text-2xl font-bold text-finance-teal">
+                              <p className="text-sm text-finance-gray dark:text-gray-300">Tempo para alcançar</p>
+                              <p className="text-xl font-bold text-finance-teal">
                                 {Math.floor(goalSimulationResult.monthsToReach/12)} anos e {goalSimulationResult.monthsToReach%12} meses
                               </p>
                             </div>
@@ -538,27 +523,27 @@ const InvestmentSimulator = () => {
                         </div>
                         
                         <div className="grid grid-cols-2 gap-2">
-                          <div className="bg-finance-light p-3 rounded-md">
-                            <p className="text-sm text-finance-gray">Total Investido</p>
-                            <p className="text-lg font-semibold">
+                          <div className="bg-finance-light dark:bg-gray-700 p-3 rounded-md">
+                            <p className="text-sm text-finance-gray dark:text-gray-300">Total Investido</p>
+                            <p className="text-sm font-semibold dark:text-white">
                               {formatCurrency(goalSimulationResult.totalInvested)}
                             </p>
                           </div>
                           
-                          <div className="bg-finance-light p-3 rounded-md">
-                            <p className="text-sm text-finance-gray">Juros Acumulados</p>
-                            <p className="text-lg font-semibold text-finance-blue">
+                          <div className="bg-finance-light dark:bg-gray-700 p-3 rounded-md">
+                            <p className="text-sm text-finance-gray dark:text-gray-300">Juros Acumulados</p>
+                            <p className="text-sm font-semibold text-finance-blue">
                               {formatCurrency(goalSimulationResult.totalInterest)}
                             </p>
                           </div>
                         </div>
                         
-                        <div className="bg-finance-blue/10 p-3 rounded-md">
-                          <p className="text-sm text-finance-gray">Valor da Meta</p>
+                        <div className="bg-finance-blue/10 dark:bg-finance-blue/20 p-3 rounded-md">
+                          <p className="text-sm text-finance-gray dark:text-gray-300">Valor da Meta</p>
                           <p className="text-lg font-semibold text-finance-blue">
                             {formatCurrency(parseFloat(goalAmount))}
                           </p>
-                          <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                          <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 mt-2">
                             <div 
                               className="bg-finance-blue h-2 rounded-full" 
                               style={{ 
@@ -566,67 +551,37 @@ const InvestmentSimulator = () => {
                               }}
                             />
                           </div>
-                          <p className="text-xs text-finance-gray mt-1">
+                          <p className="text-xs text-finance-gray dark:text-gray-300 mt-1">
                             Você já tem {((parseFloat(goalInitialAmount) / parseFloat(goalAmount)) * 100).toFixed(1)}% da meta
                           </p>
                         </div>
                       </div>
                       
-                      <div>
-                        <h4 className="text-sm font-medium text-finance-gray mb-2">
+                      <div className="flex-1 min-h-0">
+                        <h4 className="text-sm font-medium text-finance-gray dark:text-gray-300 mb-2">
                           Evolução até a Meta
                         </h4>
-                        <div className="h-64 mt-4">
-                          <ChartContainer
-                            className="h-64"
-                            config={{
-                              total: {
-                                label: "Valor Total",
-                                theme: {
-                                  light: "#4CAF50",
-                                  dark: "#6AE06E"
-                                }
-                              },
-                              invested: {
-                                label: "Investido",
-                                theme: {
-                                  light: "#2196F3",
-                                  dark: "#64B5F6"
-                                }
-                              },
-                              goal: {
-                                label: "Meta",
-                                theme: {
-                                  light: "#F97316",
-                                  dark: "#FB923C"
-                                }
-                              }
-                            }}
-                          >
+                        <div className="w-full h-48 overflow-hidden">
+                          <ResponsiveContainer width="100%" height="100%">
                             <AreaChart
                               data={goalSimulationResult.monthlyBreakdown}
-                              margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+                              margin={{ top: 10, right: 20, left: 20, bottom: 20 }}
                             >
                               <CartesianGrid strokeDasharray="3 3" />
                               <XAxis 
                                 dataKey="month" 
                                 tickFormatter={formatXAxis}
-                                label={{ value: 'Meses', position: 'insideBottomRight', offset: -10 }}
+                                fontSize={12}
                               />
                               <YAxis 
                                 tickFormatter={formatYAxis} 
-                                label={{ value: 'Valor (R$)', angle: -90, position: 'insideLeft' }}
+                                fontSize={12}
                               />
-                              <ChartTooltip
-                                content={
-                                  <ChartTooltipContent
-                                    formatter={(value, name) => {
-                                      return [`${formatCurrency(value as number)}`, name === 'value' ? 'Valor Total' : name === 'invested' ? 'Investido' : 'Meta']
-                                    }}
-                                  />
-                                }
+                              <Tooltip
+                                formatter={(value, name) => {
+                                  return [`${formatCurrency(value as number)}`, name === 'value' ? 'Valor Total' : name === 'invested' ? 'Investido' : 'Meta']
+                                }}
                               />
-                              <Legend />
                               <Area 
                                 type="monotone" 
                                 dataKey="invested" 
@@ -641,7 +596,6 @@ const InvestmentSimulator = () => {
                                 stroke="#4CAF50" 
                                 fill="#4CAF50" 
                               />
-                              {/* Horizontal line for goal amount */}
                               <Area
                                 type="monotone"
                                 dataKey={() => parseFloat(goalAmount)}
@@ -651,12 +605,12 @@ const InvestmentSimulator = () => {
                                 fill="none"
                               />
                             </AreaChart>
-                          </ChartContainer>
+                          </ResponsiveContainer>
                         </div>
                       </div>
                     </div>
                   ) : (
-                    <div className="h-full flex items-center justify-center text-finance-gray p-4 text-center">
+                    <div className="h-full flex items-center justify-center text-finance-gray dark:text-gray-300 p-4 text-center">
                       <div>
                         <Target size={40} className="mx-auto text-finance-teal/40 mb-2" />
                         <p>Preencha os dados da sua meta e clique em "Calcular Tempo para Meta" para ver os resultados</p>

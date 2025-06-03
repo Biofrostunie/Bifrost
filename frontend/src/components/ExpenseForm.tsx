@@ -52,12 +52,16 @@ const ExpenseForm = ({ onAddExpense, categories: customCategories }: ExpenseForm
       return;
     }
 
+    // Corrige o problema de fuso horário ao garantir que a data seja tratada como local
+    const localDate = new Date(date + 'T12:00:00'); // Adiciona horário do meio-dia para evitar problemas de fuso
+    const formattedDate = localDate.toISOString().split('T')[0]; // Mantém apenas a parte da data
+
     const newExpense: Expense = {
       id: Date.now().toString(),
       description,
       amount: parseFloat(amount),
       category,
-      date,
+      date: formattedDate,
       notes: notes || undefined,
       essential,
     };

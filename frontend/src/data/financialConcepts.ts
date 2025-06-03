@@ -14,12 +14,12 @@ Investimentos atrelados à Selic, como o Tesouro Selic, tendem a acompanhar essa
     recommendations: [
       {
         title: "O que é a Taxa Selic e como ela afeta sua vida",
-        url: "https://www.youtube.com/watch?v=UDgpEwMzxbQ",
+        url: "https://www.youtube.com/watch?v=WBNkhIaY7gc",
         platform: "youtube",
       },
       {
         title: "Como a Taxa Selic afeta seus investimentos",
-        url: "https://www.youtube.com/watch?v=2h6QVtMxYJE",
+        url: "https://www.youtube.com/watch?v=GgBfeGdGZdM",
         platform: "youtube",
       }
     ],
@@ -38,7 +38,7 @@ Investimentos atrelados ao IPCA, como o Tesouro IPCA+, oferecem proteção contr
     recommendations: [
       {
         title: "O que é IPCA e como ele afeta seus investimentos",
-        url: "https://www.youtube.com/watch?v=L1HMZ2TU9LI",
+        url: "https://www.youtube.com/watch?v=LLANnZaSdQ0",
         platform: "youtube",
       }
     ],
@@ -58,8 +58,8 @@ Esse tipo de investimento é muito interessante para a proteção do poder de co
 É considerado um investimento seguro e adequado para objetivos de médio a longo prazo, como aposentadoria ou reserva para estudos dos filhos.`,
     recommendations: [
       {
-        title: "Tesouro IPCA+: Vale a pena investir?",
-        url: "https://www.youtube.com/watch?v=bYQQvcF2xGk",
+        title: "IPCA+: Vale a pena investir?",
+        url: "https://www.youtube.com/shorts/0bCCXIYYmsQ",
         platform: "youtube",
       }
     ],
@@ -79,8 +79,8 @@ Uma das principais vantagens da LCI é a isenção de Imposto de Renda para pess
 As LCIs podem ter rentabilidade prefixada, pós-fixada (atrelada ao CDI) ou híbrida. Geralmente exigem um prazo mínimo de aplicação (carência), durante o qual o investidor não pode resgatar o valor investido.`,
     recommendations: [
       {
-        title: "O que é LCI e como investir?",
-        url: "https://www.youtube.com/watch?v=SNnwlSq2D_I",
+        title: "O que é LCI o que precisa saber",
+        url: "https://www.youtube.com/watch?v=Bz05weFEA1I",
         platform: "youtube",
       }
     ],
@@ -101,7 +101,7 @@ Esse investimento costuma ter um prazo mínimo de aplicação (carência), duran
     recommendations: [
       {
         title: "LCA: O que é e vale a pena investir?",
-        url: "https://www.youtube.com/watch?v=BjfF9SYLLbA",
+        url: "https://www.youtube.com/watch?v=D7bBsf5tUXI",
         platform: "youtube",
       }
     ],
@@ -122,16 +122,16 @@ A tributação pode ser regressiva (alíquotas que diminuem conforme o tempo de 
     recommendations: [
       {
         title: "Previdência Privada vale a pena? PGBL ou VGBL?",
-        url: "https://www.youtube.com/watch?v=Y1GxQXPDlTw",
+        url: "https://www.youtube.com/watch?v=sdpc4Xv8ZeA&t=1s",
         platform: "youtube",
       },
       {
         title: "Os erros que você comete ao investir em Previdência Privada",
-        url: "https://www.youtube.com/watch?v=klViqHla9Yo",
+        url: "https://www.youtube.com/watch?v=uXENx87XQ10",
         platform: "youtube",
       }
     ],
-    riskLevel: "Médio", // Fixed here from "Baixo a Médio" to just "Médio"
+    riskLevel: "Médio",
     expectedReturn: "Varia conforme o tipo de plano",
     timeframe: "Longo prazo",
     type: "retirement"
@@ -150,12 +150,12 @@ Por envolver o mercado de ações, investimentos atrelados ao Ibovespa são cons
     recommendations: [
       {
         title: "O que é o Ibovespa e como investir",
-        url: "https://www.youtube.com/watch?v=XCUEwKpOQjQ",
+        url: "https://www.youtube.com/watch?v=RAHjGxlP3G8",
         platform: "youtube",
       },
       {
         title: "Como funciona o ETF BOVA11",
-        url: "https://www.youtube.com/watch?v=vDTjiKkOlr0",
+        url: "https://www.youtube.com/shorts/Cvwk0z85qPY",
         platform: "youtube",
       }
     ],
