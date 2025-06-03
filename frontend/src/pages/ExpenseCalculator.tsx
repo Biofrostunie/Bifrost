@@ -40,13 +40,21 @@ const ExpenseCalculator = () => {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2 space-y-6">
-            <ExpenseForm onAddExpense={addExpense} />
-            <ExpenseList expenses={expenses} onRemoveExpense={removeExpense} />
+            <div className="bg-white dark:bg-slate-700/60 rounded-lg p-6 border border-gray-200 dark:border-slate-500/50">
+              <ExpenseForm onAddExpense={addExpense} />
+            </div>
+            {expenses.length > 0 && (
+              <div className="bg-white dark:bg-slate-700/60 rounded-lg p-6 border border-gray-200 dark:border-slate-500/50">
+                <ExpenseList expenses={expenses} onRemoveExpense={removeExpense} />
+              </div>
+            )}
           </div>
           
-          <div>
-            <ExpenseSummary expenses={expenses} />
-          </div>
+          {expenses.length > 0 && (
+            <div className="bg-white dark:bg-slate-700/60 rounded-lg p-6 border border-gray-200 dark:border-slate-500/50">
+              <ExpenseSummary expenses={expenses} />
+            </div>
+          )}
         </div>
       </div>
     </AppLayout>

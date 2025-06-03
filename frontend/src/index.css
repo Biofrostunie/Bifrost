@@ -75,6 +75,116 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Improved dark mode text visibility */
+  .dark {
+    color-scheme: dark;
+  }
+
+  .dark .text-gray-600 {
+    @apply text-gray-300;
+  }
+
+  .dark .text-gray-700 {
+    @apply text-gray-200;
+  }
+
+  .dark .text-gray-800 {
+    @apply text-gray-100;
+  }
+
+  .dark .text-gray-900 {
+    @apply text-white;
+  }
+
+  /* Ensure better contrast for knowledge base content */
+  .dark p {
+    @apply text-gray-200;
+  }
+
+  .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+    @apply text-white;
+  }
+
+  /* Better visibility for detailed text content */
+  .dark .text-finance-gray {
+    @apply text-gray-300;
+  }
+
+  .dark .bg-gray-50 {
+    @apply bg-slate-800;
+  }
+
+  .dark .bg-gray-100 {
+    @apply bg-slate-700;
+  }
+
+  .dark .bg-white {
+    @apply bg-slate-800 text-white;
+  }
+
+  /* Enhanced contrast for card content with lighter grays */
+  .dark .bg-white\/80 {
+    @apply bg-slate-700/90 text-white;
+  }
+
+  .dark .bg-white\/90 {
+    @apply bg-slate-700/95 text-white;
+  }
+
+  /* Improve dark mode cards to be less dark */
+  .dark .bg-blue-50 {
+    @apply bg-slate-700;
+  }
+
+  .dark .bg-blue-900\/20 {
+    @apply bg-slate-700/80;
+  }
+
+  .dark .border-blue-800 {
+    @apply border-slate-600;
+  }
+
+  .dark .bg-finance-blue\/10 {
+    @apply bg-slate-700/50;
+  }
+
+  .dark .bg-green-50\/50 {
+    @apply bg-slate-700/40;
+  }
+
+  .dark .from-green-900\/20 {
+    @apply from-slate-700/60;
+  }
+
+  .dark .to-blue-900\/20 {
+    @apply to-slate-600/60;
+  }
+
+  .dark .bg-gray-800\/50 {
+    @apply bg-slate-600/80;
+  }
+
+  .dark .bg-gray-900 {
+    @apply bg-slate-800;
+  }
+
+  .dark .border-gray-800 {
+    @apply border-slate-600;
+  }
+
+  .dark .border-gray-700 {
+    @apply border-slate-500;
+  }
+
+  /* Specific improvements for cards and containers */
+  .dark .card-dark-improved {
+    @apply bg-slate-700/60 border-slate-500/50;
+  }
+
+  .dark .container-dark-improved {
+    @apply bg-slate-700/40;
+  }
 }
 
 .page-container {

@@ -1,6 +1,13 @@
 
-import { User } from "lucide-react";
+import { User, LogOut, Moon } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface HeaderProps {
   title: string;
@@ -9,6 +16,17 @@ interface HeaderProps {
 
 const Header = ({ title, showProfile = false }: HeaderProps) => {
   const isMobile = useIsMobile();
+  
+  const handleLogout = () => {
+    console.log("Logout clicked");
+    // Aqui você pode adicionar a lógica de logout
+  };
+  
+  const handleToggleDarkMode = () => {
+    console.log("Dark mode toggle clicked");
+    // Aqui você pode adicionar a lógica para alternar modo escuro
+    document.documentElement.classList.toggle('dark');
+  };
   
   return (
     <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 sticky top-0 z-10">
@@ -25,9 +43,30 @@ const Header = ({ title, showProfile = false }: HeaderProps) => {
       )}
       
       {showProfile && (
-        <div className="w-10 h-10 rounded-full bg-finance-blue/10 flex items-center justify-center">
-          <User className="w-5 h-5 text-finance-blue" />
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="w-10 h-10 rounded-full bg-finance-blue/10 flex items-center justify-center hover:bg-finance-blue/20 transition-colors focus:outline-none focus:ring-2 focus:ring-finance-blue/50">
+              <User className="w-5 h-5 text-finance-blue" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+            <DropdownMenuItem 
+              onClick={handleToggleDarkMode}
+              className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+            >
+              <Moon className="mr-2 h-4 w-4" />
+              <span>Modo Noturno</span>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-600" />
+            <DropdownMenuItem 
+              onClick={handleLogout}
+              className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-red-600 dark:text-red-400"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Sair da Conta</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       )}
     </div>
   );

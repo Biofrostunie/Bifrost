@@ -40,23 +40,29 @@ const KnowledgeBase = () => {
           Explore conceitos financeiros importantes, entenda como funcionam e acesse recursos educacionais selecionados para ampliar seu conhecimento.
         </p>
         
-        <ConceptSearch searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+        <div className="bg-white dark:bg-slate-700/60 rounded-lg p-6 mb-6 border border-gray-200 dark:border-slate-500/50">
+          <ConceptSearch searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+        </div>
         
-        <ConceptFilter 
-          selectedFilter={selectedFilter} 
-          setSelectedFilter={setSelectedFilter}
-          concepts={financialConcepts}
-        />
+        <div className="bg-white dark:bg-slate-700/60 rounded-lg p-6 mb-6 border border-gray-200 dark:border-slate-500/50">
+          <ConceptFilter 
+            selectedFilter={selectedFilter} 
+            setSelectedFilter={setSelectedFilter}
+            concepts={financialConcepts}
+          />
+        </div>
         
         {filteredConcepts.length > 0 ? (
           <div className="space-y-6">
             {filteredConcepts.map((concept) => (
-              <FinancialConceptCard key={concept.id} concept={concept} />
+              <div key={concept.id} className="bg-white dark:bg-slate-700/60 rounded-lg border border-gray-200 dark:border-slate-500/50">
+                <FinancialConceptCard concept={concept} />
+              </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <p className="text-lg text-gray-500">
+          <div className="text-center py-12 bg-white dark:bg-slate-700/60 rounded-lg border border-gray-200 dark:border-slate-500/50">
+            <p className="text-lg text-gray-500 dark:text-gray-400">
               Nenhum conceito encontrado para essa busca.
             </p>
           </div>

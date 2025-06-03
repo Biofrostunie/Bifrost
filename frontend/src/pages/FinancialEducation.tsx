@@ -1,4 +1,3 @@
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import FinancialIndicator from "@/components/FinancialIndicator";
 import FinancialSummary from "@/components/FinancialSummary";
@@ -65,24 +64,6 @@ const FinancialEducation = () => {
     ]
   });
 
-  const educationalTopics = [
-    {
-      title: "Importância da reserva de emergência",
-      description: "Saiba como e por que construir sua reserva de emergência",
-      link: "/conhecimento"
-    },
-    {
-      title: "Investimentos para iniciantes",
-      description: "Descubra os melhores investimentos para quem está começando",
-      link: "/conhecimento"
-    },
-    {
-      title: "Planejamento financeiro",
-      description: "Aprenda a planejar suas finanças de forma eficiente",
-      link: "/conhecimento"
-    }
-  ];
-
   // Handler functions for updating user financial data
   const handleUpdateIncomes = (entries: FinancialEntry[]) => {
     setUserIncomes(entries.map(mapToIncome));
@@ -91,6 +72,27 @@ const FinancialEducation = () => {
   const handleUpdateExpenses = (entries: FinancialEntry[]) => {
     setUserExpenses(entries.map(mapToExpense));
   };
+
+  const courseRecommendations = [
+    {
+      title: "Trilha Sicredi",
+      description: "Plataforma de educação financeira do Sicredi planejamento, equilibrio financeiro e podcast",
+      url: "https://www.sicredi.com.br/site/educacaofinanceira/cursos/",
+      provider: "Sicredi"
+    },
+    {
+      title: "Santander Open Academy",
+      description: "Cursos online gratuitos de educação financeira e empreendedorismo do Santander",
+      url: "https://www.santanderopenacademy.com/pt_br/courses.html",
+      provider: "Santander"
+    },
+    {
+      title: "Fundação Bradesco",
+      description: "Cursos gratuitos de educação financeira e gestão de tempo ofertado pelo Bradesco",
+      url: "https://www.ev.org.br/areas-de-interesse",
+      provider: "Bradesco"
+    }
+  ];
 
   return (
     <AppLayout title="Educação Financeira">
@@ -104,7 +106,7 @@ const FinancialEducation = () => {
 
         <p className="text-gray-600 dark:text-gray-300">
           Aprender sobre finanças é o primeiro passo para construir um futuro financeiro sólido. 
-          Explore os indicadores econômicos, nosso conteúdo educacional e acompanhe seu resumo financeiro.
+          Explore os indicadores econômicos, nossas recomendações de cursos e acompanhe seu resumo financeiro.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -131,30 +133,33 @@ const FinancialEducation = () => {
           />
         </div>
 
-        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 md:p-6 rounded-lg border border-blue-100 dark:border-blue-800">
+        <div className="bg-blue-50 dark:bg-slate-700/60 p-4 md:p-6 rounded-lg border border-blue-100 dark:border-slate-500/50">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="h-5 w-5 text-finance-blue" />
-            <h2 className="text-lg font-semibold text-finance-dark dark:text-white">Conteúdo Educacional</h2>
+            <h2 className="text-lg font-semibold text-finance-dark dark:text-white">Recomendações de Cursos</h2>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            {educationalTopics.map((topic, index) => (
-              <Card key={index} className="p-4 hover:shadow-md transition-shadow">
-                <h3 className="font-medium mb-2 text-finance-dark dark:text-white">{topic.title}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{topic.description}</p>
-                <Link to={topic.link}>
+            {courseRecommendations.map((course, index) => (
+              <Card key={index} className="p-4 hover:shadow-md transition-shadow bg-white dark:bg-slate-600/80 border-gray-200 dark:border-slate-500/50">
+                <h3 className="font-medium mb-2 text-finance-dark dark:text-white">{course.title}</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{course.description}</p>
+                <div className="text-xs text-blue-600 dark:text-blue-400 mb-3 font-medium">
+                  {course.provider}
+                </div>
+                <a href={course.url} target="_blank" rel="noopener noreferrer">
                   <Button size="sm" variant="outline" className="w-full">
-                    Explorar <ExternalLink className="ml-1 h-3 w-3" />
+                    Acessar Cursos <ExternalLink className="ml-1 h-3 w-3" />
                   </Button>
-                </Link>
+                </a>
               </Card>
             ))}
           </div>
           
           <div className="flex justify-center mt-2">
-            <Link to="/conhecimento">
-              <Button variant="link">Ver mais conteúdo educativo</Button>
-            </Link>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              Todos os cursos são gratuitos e oferecidos pelas principais instituições financeiras do país
+            </p>
           </div>
         </div>
 

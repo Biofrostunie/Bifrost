@@ -27,19 +27,19 @@ const Home = () => {
   }, []);
 
   return (
-    <AppLayout title="Bifröst" showProfile>
+    <AppLayout title="Dashboard" showProfile>
       <div>
         <UserProfile />
         
         {/* Feature Highlight Card */}
-        <Card className="p-4 mb-6 bg-gradient-to-r from-finance-teal/10 to-[#F2FCE2]/80 border-finance-teal/30">
+        <Card className="p-4 mb-6 bg-gradient-to-r from-finance-teal/10 to-[#F2FCE2]/80 dark:from-slate-600/60 dark:to-slate-700/60 border-finance-teal/30 dark:border-slate-500/50">
           <div className="flex items-center space-x-4">
-            <div className="bg-finance-teal/20 p-3 rounded-full">
+            <div className="bg-finance-teal/20 dark:bg-finance-teal/30 p-3 rounded-full">
               <Target className="h-8 w-8 text-finance-teal" />
             </div>
             <div>
-              <h3 className="font-bold text-lg mb-1">Crie Metas Financeiras!</h3>
-              <p className="text-finance-gray">
+              <h3 className="font-bold text-lg mb-1 dark:text-white">Crie Metas Financeiras!</h3>
+              <p className="text-finance-gray dark:text-gray-300">
                 Defina objetivos financeiros e descubra quanto tempo levará para alcançá-los com nossa calculadora de metas.
               </p>
               <a 
@@ -52,7 +52,7 @@ const Home = () => {
           </div>
         </Card>
         
-        <h2 className="text-xl font-semibold mb-4">Ferramentas Financeiras</h2>
+        <h2 className="text-xl font-semibold mb-4 dark:text-white">Ferramentas Financeiras</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <DashboardCard
@@ -80,43 +80,43 @@ const Home = () => {
           />
         </div>
         
-        <h2 className="text-xl font-semibold mb-4">Dicas & Informações</h2>
+        <h2 className="text-xl font-semibold mb-4 dark:text-white">Dicas & Informações</h2>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Card className="bg-finance-blue/10 rounded-lg p-4">
+          <Card className="bg-finance-blue/10 dark:bg-slate-600/60 rounded-lg p-4 border-gray-200 dark:border-slate-500/50">
             <div className="flex items-start">
-              <div className="bg-finance-blue/20 p-2 rounded-full shrink-0 mr-3">
+              <div className="bg-finance-blue/20 dark:bg-finance-blue/30 p-2 rounded-full shrink-0 mr-3">
                 <TrendingUp className="h-5 w-5 text-finance-blue" />
               </div>
               <div>
-                <h3 className="font-semibold mb-2">Dica do dia:</h3>
-                <p>
+                <h3 className="font-semibold mb-2 dark:text-white">Dica do dia:</h3>
+                <p className="dark:text-gray-300">
                   Guardar pelo menos 10% da sua renda mensal pode fazer uma grande diferença no longo prazo. Considere investir em títulos indexados ao CDI para proteger seu dinheiro da inflação.
                 </p>
               </div>
             </div>
           </Card>
           
-          <Card className="rounded-lg p-4 border-finance-teal/30 bg-finance-teal/5">
+          <Card className="rounded-lg p-4 border-finance-teal/30 dark:border-slate-500/50 bg-finance-teal/5 dark:bg-slate-600/60">
             <div className="flex items-start">
-              <div className="rounded-full bg-finance-teal/20 p-2 mr-3 shrink-0">
+              <div className="rounded-full bg-finance-teal/20 dark:bg-finance-teal/30 p-2 mr-3 shrink-0">
                 <DollarSign className="h-5 w-5 text-finance-teal" />
               </div>
               <div>
-                <h3 className="font-semibold mb-2">Você sabia?</h3>
-                <p>{curiosity}</p>
+                <h3 className="font-semibold mb-2 dark:text-white">Você sabia?</h3>
+                <p className="dark:text-gray-300">{curiosity}</p>
               </div>
             </div>
           </Card>
           
-          <Card className="rounded-lg p-4 border-rose-300/30 bg-rose-50/50 dark:bg-rose-900/5 lg:col-span-2">
+          <Card className="rounded-lg p-4 border-rose-300/30 dark:border-slate-500/50 bg-rose-50/50 dark:bg-slate-600/60 lg:col-span-2">
             <div className="flex items-start">
-              <div className="rounded-full bg-rose-100 dark:bg-rose-900/20 p-2 mr-3 shrink-0">
+              <div className="rounded-full bg-rose-100 dark:bg-rose-900/30 p-2 mr-3 shrink-0">
                 <Heart className="h-5 w-5 text-rose-500" />
               </div>
               <div>
-                <h3 className="font-semibold mb-2">Cuidando do seu futuro</h3>
-                <p>
+                <h3 className="font-semibold mb-2 dark:text-white">Cuidando do seu futuro</h3>
+                <p className="dark:text-gray-300">
                   Planeje seus gastos com sabedoria e garanta uma saúde financeira para o seu futuro. 
                   Uma boa gestão financeira hoje significa tranquilidade amanhã.
                 </p>
