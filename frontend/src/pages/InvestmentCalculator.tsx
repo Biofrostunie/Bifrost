@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import InvestmentSimulator from "@/components/InvestmentSimulator";
 import { AppLayout } from "@/components/AppLayout";
