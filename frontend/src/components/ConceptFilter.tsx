@@ -18,7 +18,8 @@ const ConceptFilter: React.FC<ConceptFilterProps> = ({
     { id: "fixedIncome", label: "Renda Fixa" },
     { id: "index", label: "Índices" },
     { id: "retirement", label: "Aposentadoria" },
-    { id: "other", label: "Outros" }
+    { id: "other", label: "Outros" },
+    { id: "debt", label: "Passivo"}
   ];
   
   // Only show filters that have at least one concept

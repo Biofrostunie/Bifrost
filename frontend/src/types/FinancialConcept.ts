@@ -12,5 +12,5 @@ export interface FinancialConcept {
   riskLevel?: 'Baixo' | 'Médio' | 'Alto';
   expectedReturn?: string;
   timeframe?: string;
-  type: 'index' | 'fixedIncome' | 'retirement' | 'other';
+  type: 'index' | 'fixedIncome' | 'retirement' | 'other' | 'debt';
 }
