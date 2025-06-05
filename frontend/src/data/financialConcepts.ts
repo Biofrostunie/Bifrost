@@ -4,7 +4,7 @@ import { FinancialConcept } from "@/types/FinancialConcept";
 export const financialConcepts: FinancialConcept[] = [
   {
     id: "selic",
-    title: "Taxa Selic",
+    title: "Tesouro Selic (LFT)",
     description: "A taxa básica de juros da economia brasileira",
     details: `A taxa Selic é a taxa básica de juros da economia brasileira, definida pelo Banco Central. Ela influencia todas as taxas de juros do país, como as taxas de empréstimos, financiamentos e aplicações financeiras.
 
@@ -30,7 +30,7 @@ Investimentos atrelados à Selic, como o Tesouro Selic, tendem a acompanhar essa
   },
   {
     id: "ipca",
-    title: "IPCA",
+    title: "IPCA (NTN-B Principal)",
     description: "Índice oficial de inflação no Brasil",
     details: `O IPCA (Índice Nacional de Preços ao Consumidor Amplo) é o índice oficial de inflação no Brasil, calculado pelo IBGE. Ele mede a variação de preços de produtos e serviços consumidos pelas famílias com rendimento entre 1 e 40 salários mínimos.
 
@@ -49,7 +49,7 @@ Investimentos atrelados ao IPCA, como o Tesouro IPCA+, oferecem proteção contr
   },
   {
     id: "ipca-plus-6",
-    title: "IPCA + 6%",
+    title: "IPCA + 6% (NTN-B Principal)",
     description: "Investimento que paga inflação mais juros fixos de 6% ao ano",
     details: `O investimento indexado ao "IPCA + 6%" oferece ao investidor um rendimento composto pela variação do IPCA (inflação oficial do Brasil) mais uma taxa fixa de 6% ao ano.
 
@@ -139,7 +139,7 @@ A tributação pode ser regressiva (alíquotas que diminuem conforme o tempo de 
   {
     id: "ibovespa",
     title: "IBOVESPA",
-    description: "O principal índice da bolsa de valores brasileira",
+    description: "O principal índice de desempenho médio das cotações das ações negociadas na bolsa de valores do Brasil",
     details: `O Ibovespa é o principal indicador de desempenho das ações negociadas na B3 (Bolsa de Valores brasileira). Ele reúne as empresas mais negociadas e representa cerca de 80% do volume transacionado no mercado.
 
 O índice é composto pelas ações com maior volume de negociações e é recalculado a cada quatro meses. Empresas como Petrobras, Vale, Itaú e Bradesco costumam ter peso significativo na composição do índice.
