@@ -189,6 +189,25 @@ const InvestmentSimulator = () => {
     return value.toString();
   };
 
+  // Custom tooltip component that doesn't block the chart
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white dark:bg-gray-800 p-2 border border-gray-200 dark:border-gray-600 rounded shadow-lg text-xs max-w-[200px]">
+          <p className="font-medium">{`Mês: ${label}`}</p>
+          {payload.map((entry: any, index: number) => (
+            <p key={index} style={{ color: entry.color }}>
+              {`${entry.name === 'value' ? 'Valor Total' : 
+                 entry.name === 'invested' ? 'Total Investido' : 
+                 entry.name === 'goal' ? 'Meta' : entry.name}: ${formatCurrency(entry.value)}`}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="space-y-6">
       <Tabs defaultValue="standard" className="w-full">
@@ -340,7 +359,7 @@ const InvestmentSimulator = () => {
                         <h4 className="text-sm font-medium text-finance-gray dark:text-gray-300 mb-2">
                           Evolução do Investimento
                         </h4>
-                        <div className="w-full h-48 overflow-hidden">
+                        <div className="w-full h-48 overflow-visible relative">
                           <ResponsiveContainer width="100%" height="100%">
                             <AreaChart
                               data={simulationResult.monthlyBreakdown}
@@ -357,9 +376,15 @@ const InvestmentSimulator = () => {
                                 fontSize={12}
                               />
                               <Tooltip
-                                formatter={(value, name) => {
-                                  return [`${formatCurrency(value as number)}`, name === 'value' ? 'Valor Total' : 'Investido']
-                                }}
+                                content={<CustomTooltip />}
+                                position={{ x: 0, y: 0 }}
+                                wrapperStyle={{ zIndex: 1000, pointerEvents: 'none' }}
+                              />
+                              <Legend 
+                                verticalAlign="top" 
+                                height={36}
+                                iconType="line"
+                                wrapperStyle={{ paddingBottom: '10px' }}
                               />
                               <Area 
                                 type="monotone" 
@@ -367,6 +392,7 @@ const InvestmentSimulator = () => {
                                 stackId="1"
                                 stroke="#2196F3" 
                                 fill="#2196F3" 
+                                name="Total Investido"
                               />
                               <Area 
                                 type="monotone" 
@@ -374,6 +400,7 @@ const InvestmentSimulator = () => {
                                 stackId="2"
                                 stroke="#4CAF50" 
                                 fill="#4CAF50" 
+                                name="Valor Total"
                               />
                             </AreaChart>
                           </ResponsiveContainer>
@@ -561,7 +588,7 @@ const InvestmentSimulator = () => {
                         <h4 className="text-sm font-medium text-finance-gray dark:text-gray-300 mb-2">
                           Evolução até a Meta
                         </h4>
-                        <div className="w-full h-48 overflow-hidden">
+                        <div className="w-full h-48 overflow-visible relative">
                           <ResponsiveContainer width="100%" height="100%">
                             <AreaChart
                               data={goalSimulationResult.monthlyBreakdown}
@@ -578,9 +605,15 @@ const InvestmentSimulator = () => {
                                 fontSize={12}
                               />
                               <Tooltip
-                                formatter={(value, name) => {
-                                  return [`${formatCurrency(value as number)}`, name === 'value' ? 'Valor Total' : name === 'invested' ? 'Investido' : 'Meta']
-                                }}
+                                content={<CustomTooltip />}
+                                position={{ x: 0, y: 0 }}
+                                wrapperStyle={{ zIndex: 1000, pointerEvents: 'none' }}
+                              />
+                              <Legend 
+                                verticalAlign="top" 
+                                height={36}
+                                iconType="line"
+                                wrapperStyle={{ paddingBottom: '10px' }}
                               />
                               <Area 
                                 type="monotone" 
@@ -588,6 +621,7 @@ const InvestmentSimulator = () => {
                                 stackId="1"
                                 stroke="#2196F3" 
                                 fill="#2196F3" 
+                                name="Total Investido"
                               />
                               <Area 
                                 type="monotone" 
@@ -595,11 +629,12 @@ const InvestmentSimulator = () => {
                                 stackId="2"
                                 stroke="#4CAF50" 
                                 fill="#4CAF50" 
+                                name="Valor Total"
                               />
                               <Area
                                 type="monotone"
                                 dataKey={() => parseFloat(goalAmount)}
-                                name="goal"
+                                name="Meta"
                                 stroke="#F97316"
                                 strokeDasharray="5 5"
                                 fill="none"

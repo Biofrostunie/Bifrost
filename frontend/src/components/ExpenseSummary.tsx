@@ -1,7 +1,7 @@
+
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Expense } from "./ExpenseForm";
+import { Expense } from "@/pages/ExpenseCalculator";
 import { formatCurrency } from "@/lib/formatters";
 
 interface ExpenseSummaryProps {
@@ -11,11 +11,15 @@ interface ExpenseSummaryProps {
 const COLORS = ["#0EA5E9", "#14B8A6", "#F59E0B", "#EC4899", "#8B5CF6", "#10B981", "#64748B"];
 
 const ExpenseSummary = ({ expenses }: ExpenseSummaryProps) => {
+  console.log("ExpenseSummary rendering with expenses:", expenses);
+
   if (expenses.length === 0) {
+    console.log("No expenses found, returning null");
     return null;
   }
 
   const totalAmount = expenses.reduce((acc, expense) => acc + expense.amount, 0);
+  console.log("Total amount calculated:", totalAmount);
   
   const categorySummary = expenses.reduce((acc: Record<string, number>, expense) => {
     if (!acc[expense.category]) {
@@ -24,6 +28,8 @@ const ExpenseSummary = ({ expenses }: ExpenseSummaryProps) => {
     acc[expense.category] += expense.amount;
     return acc;
   }, {});
+
+  console.log("Category summary:", categorySummary);
 
   const pieChartData = Object.entries(categorySummary).map(([category, amount], index) => {
     const categoryLabels: Record<string, string> = {
@@ -42,6 +48,8 @@ const ExpenseSummary = ({ expenses }: ExpenseSummaryProps) => {
       color: COLORS[index % COLORS.length],
     };
   });
+
+  console.log("Pie chart data:", pieChartData);
 
   const expensesByDate = expenses.reduce((acc: Record<string, number>, expense) => {
     const dateKey = expense.date.substring(0, 10);
@@ -67,6 +75,8 @@ const ExpenseSummary = ({ expenses }: ExpenseSummaryProps) => {
       };
     });
 
+  console.log("Bar chart data:", barChartData);
+
   const essentialExpenses = expenses
     .filter(expense => expense.essential)
     .reduce((acc, expense) => acc + expense.amount, 0);
@@ -80,159 +90,110 @@ const ExpenseSummary = ({ expenses }: ExpenseSummaryProps) => {
     { name: "Não Essencial", value: nonEssentialExpenses, color: "#F59E0B" },
   ].filter(item => item.value > 0);
 
+  console.log("Essential pie data:", essentialPieData);
+
   const renderCustomLabel = (entry: any) => {
     const percent = ((entry.value / totalAmount) * 100).toFixed(0);
     return `${percent}%`;
   };
 
   return (
-    <div className="w-full">
-      <Card className="p-4 mb-6 w-full">
-        <div className="flex flex-col md:flex-row justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Resumo de Gastos</h3>
-          <div className="text-xl font-bold">
+    <div className="w-full space-y-6">
+      {/* Header */}
+      <Card className="p-6 bg-white dark:bg-slate-700/60 border border-gray-200 dark:border-slate-500/50">
+        <div className="flex flex-col md:flex-row justify-between items-center">
+          <h3 className="text-lg font-semibold text-finance-dark dark:text-white">Resumo de Gastos</h3>
+          <div className="text-xl font-bold text-finance-dark dark:text-white">
             Total: {formatCurrency(totalAmount)}
           </div>
         </div>
-        
-        <Tabs defaultValue="category" className="w-full" orientation="vertical">
-          <div className="flex flex-col space-y-4 w-full">
-            <TabsList className="flex flex-col h-auto w-full space-y-2 bg-transparent p-0">
-              <TabsTrigger 
-                value="category" 
-                className="w-full justify-start text-sm py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-              >
-                Por Categoria
-              </TabsTrigger>
-              <TabsTrigger 
-                value="timeline" 
-                className="w-full justify-start text-sm py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-              >
-                Linha do Tempo
-              </TabsTrigger>
-              <TabsTrigger 
-                value="essential" 
-                className="w-full justify-start text-sm py-3 px-4 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-              >
-                Essencial vs Não Essencial
-              </TabsTrigger>
-            </TabsList>
+      </Card>
 
-            <div className="w-full min-h-[300px]">
-              <TabsContent value="category" className="w-full mt-0">
-                <div className="w-full h-[280px] overflow-hidden">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={pieChartData}
-                        cx="50%"
-                        cy="45%"
-                        labelLine={false}
-                        outerRadius={60}
-                        innerRadius={20}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={renderCustomLabel}
-                        fontSize={10}
-                      >
-                        {pieChartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip 
-                        formatter={(value) => formatCurrency(value as number)} 
-                        contentStyle={{ fontSize: '11px', maxWidth: '180px' }}
-                      />
-                      <Legend 
-                        wrapperStyle={{ fontSize: '10px', paddingTop: '8px' }}
-                        layout="horizontal" 
-                        verticalAlign="bottom" 
-                        align="center"
-                        iconSize={8}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </TabsContent>
+      {/* Por Categoria */}
+      <Card className="p-6 bg-white dark:bg-slate-700/60 border border-gray-200 dark:border-slate-500/50">
+        <h4 className="text-md font-semibold mb-4 text-finance-dark dark:text-white">Por Categoria</h4>
+        <div className="w-full h-[280px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={pieChartData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                outerRadius={80}
+                innerRadius={40}
+                fill="#8884d8"
+                dataKey="value"
+                label={renderCustomLabel}
+              >
+                {pieChartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip 
+                formatter={(value) => formatCurrency(value as number)} 
+              />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </Card>
 
-              <TabsContent value="timeline" className="w-full mt-0">
-                <div className="w-full h-[280px] overflow-hidden">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart 
-                      data={barChartData} 
-                      margin={{ top: 15, right: 10, bottom: 45, left: 10 }}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis 
-                        dataKey="date" 
-                        fontSize={10}
-                        angle={-45}
-                        textAnchor="end"
-                        height={45}
-                        interval={0}
-                      />
-                      <YAxis
-                        tickFormatter={(value) => `R$${value}`}
-                        fontSize={10}
-                        width={50}
-                      />
-                      <Tooltip 
-                        formatter={(value) => formatCurrency(value as number)}
-                        labelFormatter={(label) => `Data: ${label}`}
-                        contentStyle={{ fontSize: '11px' }}
-                      />
-                      <Bar dataKey="amount" fill="#0EA5E9" name="Valor" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </TabsContent>
+      {/* Linha do Tempo */}
+      <Card className="p-6 bg-white dark:bg-slate-700/60 border border-gray-200 dark:border-slate-500/50">
+        <h4 className="text-md font-semibold mb-4 text-finance-dark dark:text-white">Linha do Tempo</h4>
+        <div className="w-full h-[280px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={barChartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis tickFormatter={(value) => `R$${value}`} />
+              <Tooltip 
+                formatter={(value) => formatCurrency(value as number)}
+                labelFormatter={(label) => `Data: ${label}`}
+              />
+              <Bar dataKey="amount" fill="#0EA5E9" name="Valor" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </Card>
 
-              <TabsContent value="essential" className="w-full mt-0">
-                {essentialPieData.length > 1 ? (
-                  <div className="w-full h-[280px] overflow-hidden">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={essentialPieData}
-                          cx="50%"
-                          cy="45%"
-                          labelLine={false}
-                          outerRadius={70}
-                          innerRadius={25}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                          fontSize={11}
-                        >
-                          {essentialPieData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Pie>
-                        <Tooltip 
-                          formatter={(value) => formatCurrency(value as number)} 
-                          contentStyle={{ fontSize: '11px' }}
-                        />
-                        <Legend 
-                          wrapperStyle={{ fontSize: '10px', paddingTop: '8px' }}
-                          layout="horizontal" 
-                          verticalAlign="bottom" 
-                          align="center"
-                          iconSize={8}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                ) : (
-                  <div className="h-[280px] flex items-center justify-center text-finance-gray">
-                    <p className="text-center text-sm">
-                      Defina despesas como essenciais ou não para visualizar dados.
-                    </p>
-                  </div>
-                )}
-              </TabsContent>
-            </div>
+      {/* Essencial vs Não Essencial */}
+      <Card className="p-6 bg-white dark:bg-slate-700/60 border border-gray-200 dark:border-slate-500/50">
+        <h4 className="text-md font-semibold mb-4 text-finance-dark dark:text-white">Essencial vs Não Essencial</h4>
+        {essentialPieData.length > 1 ? (
+          <div className="w-full h-[280px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={essentialPieData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={80}
+                  innerRadius={40}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                >
+                  {essentialPieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  formatter={(value) => formatCurrency(value as number)} 
+                />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
-        </Tabs>
+        ) : (
+          <div className="h-[280px] flex items-center justify-center text-gray-500">
+            <p className="text-center text-sm">
+              Defina despesas como essenciais ou não para visualizar dados.
+            </p>
+          </div>
+        )}
       </Card>
     </div>
   );

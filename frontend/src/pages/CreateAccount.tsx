@@ -1,11 +1,14 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DollarSign, User, Mail, Lock, ArrowLeft } from "lucide-react";
+import { TermsOfService } from "@/components/TermsOfService";
+import { PrivacyPolicy } from "@/components/PrivacyPolicy";
 
 const CreateAccount = () => {
   const [name, setName] = useState("");
@@ -144,13 +147,17 @@ const CreateAccount = () => {
                   className="text-sm text-gray-600 dark:text-gray-400"
                 >
                   Li e aceito os{" "}
-                  <Button variant="link" className="p-0 h-auto text-finance-blue">
-                    Termos de Uso
-                  </Button>{" "}
+                  <TermsOfService>
+                    <Button variant="link" className="p-0 h-auto text-finance-blue">
+                      Termos de Uso
+                    </Button>
+                  </TermsOfService>{" "}
                   e a{" "}
-                  <Button variant="link" className="p-0 h-auto text-finance-blue">
-                    Política de Privacidade
-                  </Button>
+                  <PrivacyPolicy>
+                    <Button variant="link" className="p-0 h-auto text-finance-blue">
+                      Política de Privacidade
+                    </Button>
+                  </PrivacyPolicy>
                 </label>
               </div>
 
