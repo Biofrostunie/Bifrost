@@ -1,4 +1,3 @@
-
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Home, Calculator, BookOpen, TrendingUp, Lightbulb } from "lucide-react";
@@ -19,26 +18,31 @@ export function DesktopNavigation() {
       title: "Home",
       path: "/",
       icon: Home,
+      color: "finance-blue"
     },
     {
       title: "Calculadora de Gastos",
       path: "/calculadora",
       icon: Calculator,
+      color: "finance-blue"
     },
     {
       title: "Simulador de Investimentos",
       path: "/investimentos",
       icon: TrendingUp,
+      color: "finance-teal"
     },
     {
       title: "Educação Financeira",
       path: "/educacao",
       icon: BookOpen,
+      color: "finance-purple"
     },
     {
       title: "Base de Conhecimento",
       path: "/conhecimento",
       icon: Lightbulb,
+      color: "finance-blue"
     }
   ];
 
@@ -59,10 +63,10 @@ export function DesktopNavigation() {
                       to={item.path}
                       className={({ isActive }) => 
                         cn(
-                          "flex items-center gap-3 px-3 py-2 rounded-md w-full transition-colors",
+                          "flex items-center gap-3 px-3 py-2 rounded-md w-full transition-all duration-200 relative",
                           isActive 
-                            ? "bg-finance-teal/10 text-finance-teal" 
-                            : "hover:bg-muted text-foreground/80 hover:text-foreground"
+                            ? "bg-finance-teal/20 text-finance-gray border-l-4 border-finance-teal font-semibold" 
+                            : "hover:bg-finance-blue/10 hover:text-finance-blue text-foreground/80"
                         )
                       }
                     >

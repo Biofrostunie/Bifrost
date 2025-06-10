@@ -1,4 +1,3 @@
-
 import { useState, useMemo } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import FinancialConceptCard from "@/components/FinancialConceptCard";

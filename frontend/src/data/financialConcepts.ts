@@ -4,7 +4,7 @@ import { FinancialConcept } from "@/types/FinancialConcept";
 export const financialConcepts: FinancialConcept[] = [
   {
     id: "selic",
-    title: "Taxa Selic",
+    title: "Tesouro Selic (LFT)",
     description: "A taxa básica de juros da economia brasileira",
     details: `A taxa Selic é a taxa básica de juros da economia brasileira, definida pelo Banco Central. Ela influencia todas as taxas de juros do país, como as taxas de empréstimos, financiamentos e aplicações financeiras.
 
@@ -30,7 +30,7 @@ Investimentos atrelados à Selic, como o Tesouro Selic, tendem a acompanhar essa
   },
   {
     id: "ipca",
-    title: "IPCA",
+    title: "IPCA (NTN-B Principal)",
     description: "Índice oficial de inflação no Brasil",
     details: `O IPCA (Índice Nacional de Preços ao Consumidor Amplo) é o índice oficial de inflação no Brasil, calculado pelo IBGE. Ele mede a variação de preços de produtos e serviços consumidos pelas famílias com rendimento entre 1 e 40 salários mínimos.
 
@@ -49,7 +49,7 @@ Investimentos atrelados ao IPCA, como o Tesouro IPCA+, oferecem proteção contr
   },
   {
     id: "ipca-plus-6",
-    title: "IPCA + 6%",
+    title: "IPCA + 6% (NTN-B Principal)",
     description: "Investimento que paga inflação mais juros fixos de 6% ao ano",
     details: `O investimento indexado ao "IPCA + 6%" oferece ao investidor um rendimento composto pela variação do IPCA (inflação oficial do Brasil) mais uma taxa fixa de 6% ao ano.
 
@@ -139,7 +139,7 @@ A tributação pode ser regressiva (alíquotas que diminuem conforme o tempo de 
   {
     id: "ibovespa",
     title: "IBOVESPA",
-    description: "O principal índice da bolsa de valores brasileira",
+    description: "O principal índice de desempenho médio das cotações das ações negociadas na bolsa de valores do Brasil",
     details: `O Ibovespa é o principal indicador de desempenho das ações negociadas na B3 (Bolsa de Valores brasileira). Ele reúne as empresas mais negociadas e representa cerca de 80% do volume transacionado no mercado.
 
 O índice é composto pelas ações com maior volume de negociações e é recalculado a cada quatro meses. Empresas como Petrobras, Vale, Itaú e Bradesco costumam ter peso significativo na composição do índice.
@@ -163,5 +163,58 @@ Por envolver o mercado de ações, investimentos atrelados ao Ibovespa são cons
     expectedReturn: "Variável, historicamente superior à renda fixa no longo prazo",
     timeframe: "Longo prazo",
     type: "index"
+  },
+
+  {
+    id: "emprestimo",
+    title: "Empréstimo",
+    description: "Empréstimo financeiro é um tipo de crédito, que se compromete a devolver esse valor em parcelas futuras",
+    details: `O empréstimo financeiro é uma ferramenta de crédito essencial no mercado. Nele, uma instituição, como um banco ou uma cooperativa, disponibiliza um valor em dinheiro a uma pessoa física ou jurídica. Em contrapartida, quem recebe o dinheiro se compromete a devolvê-lo em parcelas pré-determinadas, que incluem o valor principal acrescido de juros e outras taxas.
+
+O funcionamento básico envolve algumas etapas: primeiro, você solicita o crédito. Depois, a instituição faz uma análise de crédito para verificar sua capacidade de pagamento. Se tudo estiver certo, o empréstimo é aprovado e um contrato é assinado, detalhando todas as condições (valor, número de parcelas, taxa de juros, Custo Efetivo Total - CET, etc.). Só então o dinheiro é liberado. A partir daí, você inicia o pagamento das parcelas conforme o acordado até a quitação total da dívida.`,
+    recommendations: [
+      {
+        title: "Quais os juros aplicados sobre as parcelas?",
+        url: "https://www.youtube.com/watch?v=sAA8OPDFx00",
+        platform: "youtube",
+      },
+      {
+        title: "Empréstimo ou financiamento?",
+        url: "https://www.youtube.com/watch?v=BzUf-ZaDbRY",
+        platform: "youtube",
+      }
+    ],
+    riskLevel: "Médio",
+    expectedReturn: "Fixo(Para o credor), Custo(para o tomador)",
+    timeframe: "Curto e Longo prazo",
+    type: "debt"
+  },
+
+  {
+    id: "financiamento",
+    title: "Financiamento",
+    description: "Financiamento é um empréstimo usado para comprar bens, pagos em parcelas, geralmente com o bem como garantia.",
+    details: `O financiamento é uma modalidade de crédito essencial no mercado, projetada especificamente para a aquisição de bens de alto valor, como imóveis, veículos, ou até mesmo para investimentos em educação ou empresas. Basicamente, uma instituição financeira libera o valor necessário para a compra do bem, e você se compromete a devolver esse montante em parcelas regulares, acrescidas de juros e outras taxas, ao longo de um prazo determinado.
+
+O processo de financiamento é similar ao de um empréstimo comum, mas com algumas particularidades: você solicita o crédito com a finalidade específica (a compra do bem), a instituição faz uma análise de crédito rigorosa e, muitas vezes, avalia o bem a ser financiado, já que ele servirá como garantia. Com a aprovação, um contrato detalhado é assinado, e o valor é liberado. A partir daí, você inicia o pagamento das parcelas até a quitação total da dívida.
+
+Tabelas de Amortização: SAC e Price
+Ao financiar, você se deparará com duas principais metodologias para calcular as parcelas: a Tabela SAC (Sistema de Amortização Constante) e a Tabela Price (Sistema Francês de Amortização). A escolha entre elas impacta diretamente o valor das parcelas e o montante total pago.`,
+    recommendations: [
+      {
+        title: "TABELA SAC OU PRICE, Qual é o melhor?",
+        url: "https://www.youtube.com/watch?v=JLCISOUEJSg",
+        platform: "youtube",
+      },
+      {
+        title: "Como quitar um financiamento de 30 anos em 3 anos",
+        url: "https://www.youtube.com/watch?v=2kfNsNFOK6U",
+        platform: "youtube",
+      }
+    ],
+    riskLevel: "Médio",
+    expectedReturn: "Retorno para a instituição financeira",
+    timeframe: "Médio e Longo prazo",
+    type: "debt"
   }
 ];
