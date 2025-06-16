@@ -1,6 +1,8 @@
 
 import { User, LogOut, Moon } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuthStore } from "@/store/authStore";
+import { useNavigate } from "react-router-dom";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,10 +18,13 @@ interface HeaderProps {
 
 const Header = ({ title, showProfile = false }: HeaderProps) => {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  const { logout } = useAuthStore();
   
   const handleLogout = () => {
-    console.log("Logout clicked");
-    // Aqui você pode adicionar a lógica de logout
+    console.log("Logout executado");
+    logout();
+    navigate("/login");
   };
   
   const handleToggleDarkMode = () => {

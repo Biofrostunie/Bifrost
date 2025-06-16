@@ -1,18 +1,37 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { DollarSign, Mail, Lock, ArrowRight } from "lucide-react";
+import { useAuthStore } from "@/store";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  const { login, loading, error, clearError, isAuthenticated } = useAuthStore();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/");
+    }
+  }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Erro",
+        description: error,
+        variant: "destructive",
+      });
+      clearError();
+    }
+  }, [error, toast, clearError]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,21 +45,16 @@ const Login = () => {
       return;
     }
     
-    setLoading(true);
-    
-    // Simulating login - would connect to backend in real implementation
-    setTimeout(() => {
-      localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("userEmail", email);
-      setLoading(false);
-      
+    try {
+      await login(email, password);
       toast({
         title: "Login realizado com sucesso",
         description: "Bem-vindo(a) à sua plataforma financeira.",
       });
-      
       navigate("/");
-    }, 1500);
+    } catch (error) {
+      // O erro já é tratado no store
+    }
   };
 
   return (
