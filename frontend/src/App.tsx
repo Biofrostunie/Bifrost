@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
 import CreateAccount from "./pages/CreateAccount";
 import PasswordRecovery from "./pages/PasswordRecovery";
+import VerifyEmail from "./pages/VerifyEmail";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -29,6 +30,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/criar-conta" element={<CreateAccount />} />
             <Route path="/recuperar-senha" element={<PasswordRecovery />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
             
             <Route element={<ProtectedRoute />}>
               <Route path="/" element={<Home />} />

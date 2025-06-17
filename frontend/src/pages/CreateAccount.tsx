@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DollarSign, User, Mail, Lock, ArrowLeft } from "lucide-react";
 import { TermsOfService } from "@/components/TermsOfService";
 import { PrivacyPolicy } from "@/components/PrivacyPolicy";
+import { useAuthStore } from "@/store";
 
 const CreateAccount = () => {
   const [name, setName] = useState("");
@@ -16,9 +16,27 @@ const CreateAccount = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  const { createAccount, loading, error, clearError, isAuthenticated } = useAuthStore();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/");
+    }
+  }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Erro",
+        description: error,
+        variant: "destructive",
+      });
+      clearError();
+    }
+  }, [error, toast, clearError]);
 
   const handleCreateAccount = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,22 +69,17 @@ const CreateAccount = () => {
       return;
     }
     
-    setLoading(true);
-    
-    // Simulating account creation
-    setTimeout(() => {
-      localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("userEmail", email);
-      localStorage.setItem("userName", name);
-      setLoading(false);
-      
+    try {
+      await createAccount(name, email, password);
       toast({
         title: "Conta criada com sucesso",
-        description: "Bem-vindo(a) à sua plataforma financeira.",
+        description: "Verifique seu email para ativar sua conta.",
       });
-      
-      navigate("/");
-    }, 1500);
+      // Redirecionar para página de verificação com o email
+      navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+    } catch (error) {
+      // O erro já é tratado no store
+    }
   };
 
   return (

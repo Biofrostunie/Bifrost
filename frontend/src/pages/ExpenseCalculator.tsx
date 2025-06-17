@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import ExpenseForm from "@/components/ExpenseForm";
 import ExpenseList from "@/components/ExpenseList";
 import ExpenseSummary from "@/components/ExpenseSummary";
@@ -12,6 +13,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { useExpenseStore } from "@/store";
+import { toast } from "sonner";
 
 export type Expense = {
   id: string;
@@ -26,23 +29,48 @@ export type Expense = {
 const EXPENSES_PER_PAGE = 10;
 
 const ExpenseCalculator = () => {
-  const [expenses, setExpenses] = useState<Expense[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  
+  const { 
+    expenses, 
+    loading, 
+    error, 
+    getExpenses, 
+    addExpense, 
+    removeExpense, 
+    clearError 
+  } = useExpenseStore();
+
+  useEffect(() => {
+    getExpenses();
+  }, [getExpenses]);
+
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      clearError();
+    }
+  }, [error, clearError]);
 
   console.log("ExpenseCalculator state - expenses:", expenses);
 
-  const addExpense = (expense: Omit<Expense, "id">) => {
-    const newExpense = {
-      ...expense,
-      id: crypto.randomUUID(),
-    };
-    console.log("Adding new expense:", newExpense);
-    setExpenses([...expenses, newExpense]);
+  const handleAddExpense = async (expense: Omit<Expense, "id">) => {
+    try {
+      await addExpense(expense);
+      toast.success("Despesa adicionada com sucesso!");
+    } catch (error) {
+      // O erro já é tratado no store
+    }
   };
 
-  const removeExpense = (id: string) => {
+  const handleRemoveExpense = async (id: string) => {
     console.log("Removing expense with id:", id);
-    setExpenses(expenses.filter((expense) => expense.id !== id));
+    try {
+      await removeExpense(id);
+      toast.success("Despesa removida com sucesso!");
+    } catch (error) {
+      // O erro já é tratado no store
+    }
   };
 
   // Pagination logic
@@ -71,12 +99,12 @@ const ExpenseCalculator = () => {
           {/* Left Column - Form and List */}
           <div className="space-y-6">
             <div className="bg-white dark:bg-slate-700/60 rounded-lg p-6 border border-gray-200 dark:border-slate-500/50">
-              <ExpenseForm onAddExpense={addExpense} />
+              <ExpenseForm onAddExpense={handleAddExpense} />
             </div>
             
             {expenses.length > 0 && (
               <div className="bg-white dark:bg-slate-700/60 rounded-lg p-6 border border-gray-200 dark:border-slate-500/50">
-                <ExpenseList expenses={currentExpenses} onRemoveExpense={removeExpense} />
+                <ExpenseList expenses={currentExpenses} onRemoveExpense={handleRemoveExpense} />
                 
                 {/* Pagination */}
                 {expenses.length > EXPENSES_PER_PAGE && (
