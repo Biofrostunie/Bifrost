@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 import { User, PasswordRecoveryState } from './types';
 
@@ -15,6 +14,9 @@ interface AuthStore {
   // POST - Autenticação e criação
   login: (email: string, password: string) => Promise<void>;
   createAccount: (name: string, email: string, password: string) => Promise<void>;
+  
+  // POST - Verificação de email
+  verifyEmail: (token: string) => Promise<void>;
   
   // POST - Recuperação de senha
   sendPasswordResetEmail: (email: string) => Promise<void>;
@@ -91,7 +93,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   },
 
   // POST - Endpoint: POST /api/auth/register
-  // Cria uma nova conta de usuário
+  // Cria uma nova conta de usuário (MODIFICADO - não faz login automático)
   createAccount: async (name: string, email: string, password: string) => {
     set({ loading: true, error: null });
     try {
@@ -105,28 +107,47 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       // Simulação de tempo de resposta da API
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Simulação da resposta da API
-      const user: User = {
-        id: '1',
-        name,
-        email,
-        phone: '',
-        memberSince: 'Janeiro 2024'
-      };
+      // IMPORTANTE: Não fazer login automático após criar conta
+      // A conta precisa ser verificada via email primeiro
       
-      // Persistir dados de autenticação
-      localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('userEmail', email);
-      localStorage.setItem('userName', name);
-      
-      set({ 
-        isAuthenticated: true, 
-        user, 
-        loading: false 
-      });
+      set({ loading: false, error: null });
     } catch (error) {
       // Tratamento de erro da API
       set({ error: 'Erro ao criar conta', loading: false });
+    }
+  },
+
+  // POST - Endpoint: POST /api/auth/verify-email
+  // Verifica o email do usuário através do token recebido por email
+  verifyEmail: async (token: string) => {
+    set({ loading: true, error: null });
+    try {
+      // TODO: Substituir por chamada real da API
+      // const response = await fetch('/api/auth/verify-email', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ token })
+      // });
+      // 
+      // if (!response.ok) {
+      //   throw new Error('Token inválido ou expirado');
+      // }
+      
+      // Simulação de tempo de resposta da API
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Simulação de validação do token
+      if (!token || token.length < 10) {
+        throw new Error('Token inválido ou expirado');
+      }
+      
+      // Verificação bem-sucedida
+      set({ loading: false, error: null });
+    } catch (error) {
+      // Tratamento de erro da API
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao verificar email';
+      set({ error: errorMessage, loading: false });
+      throw error;
     }
   },
 

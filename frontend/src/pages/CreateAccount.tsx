@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
@@ -74,9 +73,10 @@ const CreateAccount = () => {
       await createAccount(name, email, password);
       toast({
         title: "Conta criada com sucesso",
-        description: "Bem-vindo(a) à sua plataforma financeira.",
+        description: "Verifique seu email para ativar sua conta.",
       });
-      navigate("/");
+      // Redirecionar para página de verificação com o email
+      navigate(`/verify-email?email=${encodeURIComponent(email)}`);
     } catch (error) {
       // O erro já é tratado no store
     }
