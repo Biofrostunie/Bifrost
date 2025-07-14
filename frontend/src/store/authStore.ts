@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { User, PasswordRecoveryState } from './types';
+import { apiFetch } from '@/lib/api';
 
 interface AuthStore {
   // Estado do store
@@ -57,38 +58,32 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   login: async (email: string, password: string) => {
     set({ loading: true, error: null });
     try {
-      // TODO: Substituir por chamada real da API
-      // const response = await fetch('/api/auth/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ email, password })
-      // });
-      
-      // Simulação de tempo de resposta da API
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Simulação da resposta da API
-      const user: User = {
-        id: '1',
-        name: 'João Silva',
-        email,
-        phone: '',
-        memberSince: 'Janeiro 2024'
-      };
-      
-      // Persistir dados de autenticação
+      const data = await apiFetch('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password })
+      });
+
+      const { access_token, user } = data.data;
+
+      localStorage.setItem('token', access_token);
       localStorage.setItem('isLoggedIn', 'true');
-      localStorage.setItem('userEmail', email);
-      localStorage.setItem('userName', user.name);
-      
-      set({ 
-        isAuthenticated: true, 
-        user, 
-        loading: false 
+      localStorage.setItem('userEmail', user.email);
+      localStorage.setItem('userName', user.fullName);
+
+      set({
+        isAuthenticated: true,
+        user: {
+          id: user.id,
+          name: user.fullName,
+          email: user.email,
+          phone: user.phone ?? '',
+          memberSince: user.memberSince ?? ''
+        },
+        loading: false
       });
     } catch (error) {
-      // Tratamento de erro da API
-      set({ error: 'Erro ao fazer login', loading: false });
+      set({ error: error instanceof Error ? error.message : 'Erro ao fazer login', loading: false });
+      throw error;
     }
   },
 
@@ -97,23 +92,15 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   createAccount: async (name: string, email: string, password: string) => {
     set({ loading: true, error: null });
     try {
-      // TODO: Substituir por chamada real da API
-      // const response = await fetch('/api/auth/register', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ name, email, password })
-      // });
-      
-      // Simulação de tempo de resposta da API
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // IMPORTANTE: Não fazer login automático após criar conta
-      // A conta precisa ser verificada via email primeiro
-      
+      await apiFetch('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({ fullName: name, email, password })
+      });
+
       set({ loading: false, error: null });
     } catch (error) {
-      // Tratamento de erro da API
-      set({ error: 'Erro ao criar conta', loading: false });
+      set({ error: error instanceof Error ? error.message : 'Erro ao criar conta', loading: false });
+      throw error;
     }
   },
 
@@ -122,29 +109,13 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   verifyEmail: async (token: string) => {
     set({ loading: true, error: null });
     try {
-      // TODO: Substituir por chamada real da API
-      // const response = await fetch('/api/auth/verify-email', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ token })
-      // });
-      // 
-      // if (!response.ok) {
-      //   throw new Error('Token inválido ou expirado');
-      // }
-      
-      // Simulação de tempo de resposta da API
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Simulação de validação do token
-      if (!token || token.length < 10) {
-        throw new Error('Token inválido ou expirado');
-      }
-      
-      // Verificação bem-sucedida
+      await apiFetch('/auth/verify-email', {
+        method: 'POST',
+        body: JSON.stringify({ token })
+      });
+
       set({ loading: false, error: null });
     } catch (error) {
-      // Tratamento de erro da API
       const errorMessage = error instanceof Error ? error.message : 'Erro ao verificar email';
       set({ error: errorMessage, loading: false });
       throw error;
@@ -156,17 +127,11 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   sendPasswordResetEmail: async (email: string) => {
     set({ loading: true, error: null });
     try {
-      // TODO: Substituir por chamada real da API
-      // const response = await fetch('/api/auth/forgot-password', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ email })
-      // });
-      
-      // Simulação de tempo de resposta da API
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Atualizar estado para próximo passo
+      await apiFetch('/auth/forgot-password', {
+        method: 'POST',
+        body: JSON.stringify({ email })
+      });
+
       set((state) => ({
         loading: false,
         passwordRecovery: {
@@ -176,39 +141,22 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         }
       }));
     } catch (error) {
-      // Tratamento de erro da API
-      set({ error: 'Erro ao enviar email de recuperação', loading: false });
+      set({ error: error instanceof Error ? error.message : 'Erro ao enviar email de recuperação', loading: false });
+      throw error;
     }
   },
 
   // POST - Endpoint: POST /api/auth/verify-reset-code
   // Verifica código de recuperação de senha
   verifyResetCode: async (code: string) => {
-    set({ loading: true, error: null });
-    try {
-      // TODO: Substituir por chamada real da API
-      // const response = await fetch('/api/auth/verify-reset-code', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ code, email: get().passwordRecovery.email })
-      // });
-      
-      // Simulação de tempo de resposta da API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Atualizar estado para próximo passo
-      set((state) => ({
-        loading: false,
-        passwordRecovery: {
-          ...state.passwordRecovery,
-          verificationCode: code,
-          step: 'newPassword'
-        }
-      }));
-    } catch (error) {
-      // Tratamento de erro da API
-      set({ error: 'Código inválido', loading: false });
-    }
+    set((state) => ({
+      loading: false,
+      passwordRecovery: {
+        ...state.passwordRecovery,
+        verificationCode: code,
+        step: 'newPassword'
+      }
+    }));
   },
 
   // PUT - Endpoint: PUT /api/auth/reset-password
@@ -216,24 +164,18 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   resetPassword: async (newPassword: string, confirmPassword: string) => {
     set({ loading: true, error: null });
     try {
-      // Validação local antes de enviar para API
       if (newPassword !== confirmPassword) {
         throw new Error('Senhas não conferem');
       }
-      
-      // TODO: Substituir por chamada real da API
-      // const { email, verificationCode } = get().passwordRecovery;
-      // const response = await fetch('/api/auth/reset-password', {
-      //   method: 'PUT',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ email, code: verificationCode, newPassword })
-      // });
-      
-      // Simulação de tempo de resposta da API
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Limpar estado de recuperação após sucesso
-      set({ 
+
+      const { verificationCode } = get().passwordRecovery;
+
+      await apiFetch('/auth/reset-password', {
+        method: 'POST',
+        body: JSON.stringify({ token: verificationCode, newPassword })
+      });
+
+      set({
         loading: false,
         passwordRecovery: {
           email: '',
@@ -244,21 +186,15 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         }
       });
     } catch (error) {
-      // Tratamento de erro da API
       set({ error: error instanceof Error ? error.message : 'Erro ao redefinir senha', loading: false });
+      throw error;
     }
   },
 
   // DELETE - Endpoint: POST /api/auth/logout (ou limpeza local)
   // Remove autenticação do usuário
   logout: () => {
-    // TODO: Adicionar chamada para invalidar token no servidor
-    // await fetch('/api/auth/logout', {
-    //   method: 'POST',
-    //   headers: { 'Authorization': `Bearer ${token}` }
-    // });
-    
-    // Limpar dados locais de autenticação
+    localStorage.removeItem('token');
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('userEmail');
     localStorage.removeItem('userName');
