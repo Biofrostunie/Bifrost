@@ -1,0 +1,65 @@
+module.exports = {
+  preset: 'ts-jest',
+  testEnvironment: 'node',
+  moduleFileExtensions: ['js', 'json', 'ts'],
+  rootDir: '.',
+  testRegex: '.*\\.spec\\.ts$',
+  transform: {
+    '^.+\\.(t|j)s$': 'ts-jest',
+  },
+  collectCoverageFrom: [
+    'src/**/*.(t|j)s',
+    '!src/**/*.spec.ts',
+    '!src/**/*.e2e-spec.ts',
+    '!src/**/*.integration.spec.ts',
+    '!src/main.ts',
+    '!src/**/*.module.ts',
+    '!src/**/*.interface.ts',
+    '!src/**/*.dto.ts',
+    '!src/**/*.decorator.ts',
+    '!src/**/*.filter.ts',
+    '!src/**/*.interceptor.ts',
+    '!src/**/*.guard.ts',
+    '!src/**/*.strategy.ts',
+  ],
+  coverageDirectory: 'coverage',
+  coverageReporters: ['text', 'lcov', 'html', 'json', 'text-summary'],
+  coverageThreshold: {
+    global: {
+      branches: 80,
+      functions: 80,
+      lines: 80,
+      statements: 80,
+    },
+  },
+  moduleNameMapping: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+    '^@/auth/(.*)$': '<rootDir>/src/auth/$1',
+    '^@/users/(.*)$': '<rootDir>/src/users/$1',
+    '^@/expenses/(.*)$': '<rootDir>/src/expenses/$1',
+    '^@/incomes/(.*)$': '<rootDir>/src/incomes/$1',
+    '^@/investment-simulations/(.*)$': '<rootDir>/src/investment-simulations/$1',
+    '^@/financial-concepts/(.*)$': '<rootDir>/src/financial-concepts/$1',
+    '^@/common/(.*)$': '<rootDir>/src/common/$1',
+    '^@/prisma/(.*)$': '<rootDir>/src/prisma/$1',
+    '^@/trpc/(.*)$': '<rootDir>/src/trpc/$1',
+  },
+  setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
+  testTimeout: 30000,
+  verbose: true,
+  detectOpenHandles: true,
+  forceExit: true,
+  clearMocks: true,
+  resetMocks: true,
+  restoreMocks: true,
+  // Configurações específicas para mocks
+  globals: {
+    'ts-jest': {
+      useESM: false,
+    },
+  },
+  // Configuração para ignorar warnings de deprecação
+  testEnvironmentOptions: {
+    NODE_ENV: 'test',
+  },
+};

@@ -1,0 +1,18 @@
+{
+  "moduleFileExtensions": ["js", "json", "ts"],
+  "rootDir": ".",
+  "testEnvironment": "node",
+  "testRegex": ".load-spec.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "moduleNameMapping": {
+    "^@/(.*)$": "<rootDir>/src/$1"
+  },
+  "setupFilesAfterEnv": ["<rootDir>/test/setup-load.ts"],
+  "testTimeout": 120000,
+  "detectOpenHandles": true,
+  "forceExit": true,
+  "maxWorkers": 1,
+  "verbose": true
+}
