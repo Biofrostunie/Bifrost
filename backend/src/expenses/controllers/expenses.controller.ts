@@ -166,6 +166,9 @@ export class ExpensesController {
         'X-Request-ID': requestId,
         'X-Processing-Time': processingTime.toString(),
         'X-Processing': 'false',
+        'Access-Control-Allow-Origin': 'http://localhost:8080',
+        'Access-Control-Allow-Credentials': 'true',
+        'Access-Control-Expose-Headers': 'Content-Disposition, Content-Type, X-Request-ID',
       });
       
       // Send the PDF buffer

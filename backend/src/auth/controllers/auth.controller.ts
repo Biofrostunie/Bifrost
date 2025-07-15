@@ -7,7 +7,9 @@ import {
   HttpStatus,
   Version,
   Ip,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { 
   ApiTags, 
   ApiOperation, 
@@ -121,8 +123,15 @@ export class AuthController {
     @Body() loginDto: LoginDto, 
     @CurrentUser() user: CurrentUserType,
     @Ip() ip: string,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    return this.authService.login(user, { ip });
+    const result = await this.authService.login(user, { ip });
+    
+    // Set CORS headers for login response
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Expose-Headers', 'Authorization, X-Request-ID');
+    
+    return result;
   }
 
   @ApiOperation({ 
