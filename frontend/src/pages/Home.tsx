@@ -4,33 +4,73 @@ import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import UserProfile from "@/components/UserProfile";
 import DashboardCard from "@/components/DashboardCard";
-
-// Financial curiosities to display randomly
-const financialCuriosities = [
-  "Se você investir R$ 100 por mês com um rendimento médio de 10% ao ano, em 30 anos terá acumulado aproximadamente R$ 226.000.",
-  "A regra dos 72 permite estimar em quantos anos seu dinheiro irá dobrar: basta dividir 72 pela taxa de juros anual. Ex: a 8% ao ano, seu dinheiro dobra em 9 anos.",
-  "O Brasil já teve 8 moedas diferentes desde 1942: Cruzeiro, Cruzeiro Novo, Cruzeiro (2ª vez), Cruzado, Cruzado Novo, Cruzeiro (3ª vez), Cruzeiro Real e finalmente o Real em 1994.",
-  "Warren Buffett, um dos maiores investidores do mundo, acumulou mais de 99% de sua fortuna depois dos 50 anos de idade.",
-  "A primeira bolsa de valores do mundo foi criada em Amsterdam, na Holanda, em 1602.",
-  "Apenas 3 em cada 10 brasileiros possuem algum tipo de investimento além da poupança, segundo dados da ANBIMA.",
-  "Em 1980, a inflação no Brasil chegou a 110% ao ano. Em 1993, no auge da hiperinflação, chegou a incrível marca de 2.477%.",
-  "Guardar 10% da sua renda todos os meses pode fazer uma enorme diferença no longo prazo devido ao poder dos juros compostos."
-];
+import InvestorProfileDialog from "@/components/InvestorProfileDialog";
+import { getCurrentTip } from "@/data/finacialTips"
+// Sistema de dicas financeiras com rotação temporal
 
 const Home = () => {
-  const [curiosity, setCuriosity] = useState("");
+  const [showProfileDialog, setShowProfileDialog] = useState(false);
+  const [dailyTip, setDailyTip] = useState("");
+  const [weeklyTip, setWeeklyTip] = useState("");
+  const [monthlyTip, setMonthlyTip] = useState("");
 
-  // Select a random curiosity on component mount
   useEffect(() => {
-    const randomIndex = Math.floor(Math.random() * financialCuriosities.length);
-    setCuriosity(financialCuriosities[randomIndex]);
+    // Carregar dicas baseadas no sistema de rotação temporal
+    setDailyTip(getCurrentTip('daily').content);
+    setWeeklyTip(getCurrentTip('weekly').content);
+    setMonthlyTip(getCurrentTip('monthly').content);
+
+    // Verificar se é o primeiro login e mostrar popup de perfil de investidor
+    const hasSeenProfileDialog = localStorage.getItem('investor-profile-dialog-seen');
+    const hasCompletedProfile = localStorage.getItem('investor-profile');
+
+    if (!hasSeenProfileDialog && !hasCompletedProfile) {
+      // Mostrar após um pequeno delay para melhor UX
+      setTimeout(() => {
+        setShowProfileDialog(true);
+      }, 2000);
+    }
   }, []);
+
+  const handleProfileComplete = (profile: string) => {
+    localStorage.setItem('investor-profile', profile);
+    localStorage.setItem('investor-profile-dialog-seen', 'true');
+    console.log('Perfil de investidor salvo:', profile);
+
+    // TODO: Integração com Supabase
+    // Enviar perfil para o backend
+    /*
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .upsert({
+          user_id: user.id,
+          investor_profile: profile,
+          updated_at: new Date().toISOString()
+        });
+      
+      if (error) throw error;
+      console.log('Perfil salvo no backend:', data);
+    } catch (error) {
+      console.error('Erro ao salvar perfil:', error);
+    }
+    */
+  };
+
+  const handleProfileDialogClose = () => {
+    localStorage.setItem('investor-profile-dialog-seen', 'true');
+  };
 
   return (
     <AppLayout title="Dashboard" showProfile>
       <div>
+        <InvestorProfileDialog
+          open={showProfileDialog}
+          onOpenChange={setShowProfileDialog}
+          onComplete={handleProfileComplete}
+        />
         <UserProfile />
-        
+
         {/* Feature Highlight Card */}
         <Card className="p-4 mb-6 bg-gradient-to-r from-finance-teal/10 to-[#F2FCE2]/80 dark:from-slate-600/60 dark:to-slate-700/60 border-finance-teal/30 dark:border-slate-500/50">
           <div className="flex items-center space-x-4">
@@ -42,8 +82,8 @@ const Home = () => {
               <p className="text-finance-gray dark:text-gray-300">
                 Defina objetivos financeiros e descubra quanto tempo levará para alcançá-los com nossa calculadora de metas.
               </p>
-              <a 
-                href="/investimentos" 
+              <a
+                href="/investimentos"
                 className="inline-flex mt-2 items-center text-finance-teal font-medium hover:underline"
               >
                 Experimentar agora <TrendingUp className="ml-1 h-4 w-4" />
@@ -51,9 +91,9 @@ const Home = () => {
             </div>
           </div>
         </Card>
-        
+
         <h2 className="text-xl font-semibold mb-4 dark:text-white">Ferramentas Financeiras</h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <DashboardCard
             title="Calculadora de Gastos"
@@ -62,7 +102,7 @@ const Home = () => {
             to="/calculadora"
             color="finance-blue"
           />
-          
+
           <DashboardCard
             title="Simulador de Investimentos"
             description="Calcule o rendimento dos seus investimentos"
@@ -70,7 +110,7 @@ const Home = () => {
             to="/investimentos"
             color="finance-teal"
           />
-          
+
           <DashboardCard
             title="Educação Financeira"
             description="Entenda os principais indicadores econômicos"
@@ -79,9 +119,9 @@ const Home = () => {
             color="finance-purple"
           />
         </div>
-        
+
         <h2 className="text-xl font-semibold mb-4 dark:text-white">Dicas & Informações</h2>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Card className="bg-finance-blue/10 dark:bg-slate-600/60 rounded-lg p-4 border-gray-200 dark:border-slate-500/50">
             <div className="flex items-start">
@@ -91,12 +131,12 @@ const Home = () => {
               <div>
                 <h3 className="font-semibold mb-2 dark:text-white">Dica do dia:</h3>
                 <p className="dark:text-gray-300">
-                  Guardar pelo menos 10% da sua renda mensal pode fazer uma grande diferença no longo prazo. Considere investir em títulos indexados ao CDI para proteger seu dinheiro da inflação.
+                  {dailyTip}
                 </p>
               </div>
             </div>
           </Card>
-          
+
           <Card className="rounded-lg p-4 border-finance-teal/30 dark:border-slate-500/50 bg-finance-teal/5 dark:bg-slate-600/60">
             <div className="flex items-start">
               <div className="rounded-full bg-finance-teal/20 dark:bg-finance-teal/30 p-2 mr-3 shrink-0">
@@ -104,11 +144,11 @@ const Home = () => {
               </div>
               <div>
                 <h3 className="font-semibold mb-2 dark:text-white">Você sabia?</h3>
-                <p className="dark:text-gray-300">{curiosity}</p>
+                <p className="dark:text-gray-300">{weeklyTip}</p>
               </div>
             </div>
           </Card>
-          
+
           <Card className="rounded-lg p-4 border-rose-300/30 dark:border-slate-500/50 bg-rose-50/50 dark:bg-slate-600/60 lg:col-span-2">
             <div className="flex items-start">
               <div className="rounded-full bg-rose-100 dark:bg-rose-900/30 p-2 mr-3 shrink-0">
@@ -117,8 +157,7 @@ const Home = () => {
               <div>
                 <h3 className="font-semibold mb-2 dark:text-white">Cuidando do seu futuro</h3>
                 <p className="dark:text-gray-300">
-                  Planeje seus gastos com sabedoria e garanta uma saúde financeira para o seu futuro. 
-                  Uma boa gestão financeira hoje significa tranquilidade amanhã.
+                  {monthlyTip}
                 </p>
               </div>
             </div>
