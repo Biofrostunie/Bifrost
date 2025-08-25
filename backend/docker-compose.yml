@@ -30,35 +30,6 @@ services:
         reservations:
           memory: 256M
 
-  # Redis for caching
-  redis:
-    image: redis:7-alpine
-    container_name: financial_education_redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    networks:
-      - financial_network
-    volumes:
-      - redis_data:/data
-    command: >
-      redis-server
-      --requirepass senha-forte-confia
-      --appendonly yes
-      --maxmemory 128mb
-      --maxmemory-policy allkeys-lru
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "senha-forte-confia", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    deploy:
-      resources:
-        limits:
-          memory: 256M
-        reservations:
-          memory: 128M
-
   # Backend NestJS Application
   backend:
     build:
@@ -72,7 +43,6 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      # Aqui o hostname do banco é 'postgres' (nome do container)
       DATABASE_URL: postgresql://postgres:postgres123@postgres:5432/financial_education_db
       JWT_SECRET: your-super-secret-jwt-key-change-in-production-2024-bifrost
       LOG_LEVEL: info
@@ -83,17 +53,13 @@ services:
       SMTP_PASS: qfchctnvfmyulonn
       EMAIL_FROM: noreplybifrost@gmail.com
       EMAIL_FROM_NAME: Bifröst Education Platform
-      # Redis também usa o nome do container no Docker
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: senha-forte-confia
-      REDIS_DB: 0
+      # Puppeteer configuration
+      PUPPETEER_SKIP_CHROMIUM_DOWNLOAD: true
+      PUPPETEER_EXECUTABLE_PATH: /usr/bin/chromium-browser
     ports:
       - "3000:3000"
     depends_on:
       postgres:
-        condition: service_healthy
-      redis:
         condition: service_healthy
     networks:
       - financial_network
@@ -114,6 +80,30 @@ services:
         reservations:
           memory: 512M
           cpus: '0.5'
+
+  # Redis for caching (optional)
+  redis:
+    image: redis:7-alpine
+    container_name: financial_education_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - financial_network
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+        reservations:
+          memory: 128M
+    command: redis-server --appendonly yes --maxmemory 128mb --maxmemory-policy allkeys-lru
 
 volumes:
   postgres_data:

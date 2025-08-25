@@ -1,7 +1,7 @@
+// This is your Prisma schema file
+
 generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "debian-openssl-3.0.x"]
-  output   = "./node_modules/@prisma/client"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -9,116 +9,109 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// User model
 model User {
-  id                 String               @id @default(uuid())
-  email              String               @unique
-  password           String
-  name               String
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  incomes            Income[]
-  expenses           Expense[]
-  resetPasswordToken ResetPasswordToken?
-  investmentSims     InvestmentSimulation[]
+  id           String                   @id @default(uuid()) @db.Uuid
+  email        String                   @unique
+  passwordHash String
+  fullName     String?
+  phone        String?
+  address      String?
+  isEmailVerified Boolean               @default(false)
+  emailVerificationToken String?
+  passwordResetToken String?
+  passwordResetExpires DateTime?
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt
+  profile      UserProfile?
+  expenses     Expense[]
+  incomes      Income[]
+  interactions EducationalInteraction[]
+  simulations  InvestmentSimulation[]
 
   @@map("users")
 }
 
-// Reset Password Token model
-model ResetPasswordToken {
-  id        String   @id @default(uuid())
-  token     String   @unique
-  expiresAt DateTime
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+model UserProfile {
+  id             String   @id @default(uuid()) @db.Uuid
+  userId         String   @unique @db.Uuid
+  monthlyIncome  Decimal? @db.Decimal(10, 2)
+  financialGoals String[]
+  riskTolerance  String? // 'conservative', 'moderate', 'aggressive'
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("reset_password_tokens")
+  @@map("user_profiles")
 }
 
-// Income Category model
-model IncomeCategory {
-  id          String    @id @default(uuid())
-  name        String
-  description String?
-  incomes     Income[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+model Expense {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  description String
+  amount      Decimal  @db.Decimal(10, 2)
+  category    String
+  date        DateTime @db.Date
+  essential   Boolean  @default(false)
+  notes       String?
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("income_categories")
+  @@index([userId, date(sort: Desc)])
+  @@map("expenses")
 }
 
-// Income model
 model Income {
-  id           String         @id @default(uuid())
-  amount       Float
-  description  String?
-  date         DateTime
-  userId       String
-  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  categoryId   String
-  category     IncomeCategory @relation(fields: [categoryId], references: [id])
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @db.Uuid
+  source      String
+  amount      Decimal  @db.Decimal(10, 2)
+  recurrent   Boolean  @default(false)
+  description String?
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("incomes")
 }
 
-// Expense Category model
-model ExpenseCategory {
-  id          String    @id @default(uuid())
-  name        String
-  description String?
-  expenses    Expense[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  @@map("expense_categories")
-}
-
-// Expense model
-model Expense {
-  id           String          @id @default(uuid())
-  amount       Float
-  description  String?
-  date         DateTime
-  userId       String
-  user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  categoryId   String
-  category     ExpenseCategory @relation(fields: [categoryId], references: [id])
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
-
-  @@map("expenses")
-}
-
-// Financial Concept model (for education)
 model FinancialConcept {
-  id          String   @id @default(uuid())
-  title       String
-  content     String
-  tags        String[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String                   @id @default(uuid()) @db.Uuid
+  title           String
+  description     String
+  category        String
+  difficultyLevel String? // 'beginner', 'intermediate', 'advanced'
+  tags            String[]
+  createdAt       DateTime                 @default(now())
+  interactions    EducationalInteraction[]
 
+  @@index([category])
   @@map("financial_concepts")
 }
 
-// Investment Simulation model
+model EducationalInteraction {
+  id              String            @id @default(uuid()) @db.Uuid
+  userId          String            @db.Uuid
+  contentType     String // 'concept', 'book', 'article'
+  contentId       String            @db.Uuid // FIXED: Changed from String to String @db.Uuid
+  interactionType String // 'like', 'save', 'view'
+  createdAt       DateTime          @default(now())
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  concept         FinancialConcept? @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, contentId, interactionType])
+  @@index([userId, contentType, contentId])
+  @@map("educational_interactions")
+}
+
 model InvestmentSimulation {
-  id                     String   @id @default(uuid())
-  userId                 String
-  user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  initialAmount          Float
-  monthlyContribution    Float
-  interestRate          Float
-  timeframeYears        Int
-  compoundingFrequency  String   @default("monthly")
-  name                  String?
-  finalAmount           Float
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
+  id                  String   @id @default(uuid()) @db.Uuid
+  userId              String   @db.Uuid
+  initialAmount       Decimal  @db.Decimal(10, 2)
+  monthlyContribution Decimal? @db.Decimal(10, 2)
+  annualReturnRate    Decimal  @db.Decimal(5, 2)
+  timePeriodMonths    Int
+  simulationName      String?
+  createdAt           DateTime @default(now())
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("investment_simulations")
 }
