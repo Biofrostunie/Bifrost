@@ -11,7 +11,7 @@ beforeAll(async () => {
   process.env.SMTP_PASS = 'test-password';
   process.env.EMAIL_FROM = 'noreply@test.com';
   process.env.EMAIL_FROM_NAME = 'Test Platform Load';
-  process.env.FRONTEND_URL = 'http://localhost:3001';
+  process.env.FRONTEND_URL = 'http://localhost:8080';
   
   // Configurações específicas para testes de carga
   process.env.THROTTLE_TTL = '1000';

@@ -47,7 +47,7 @@ describe('EmailService', () => {
         SMTP_PASS: 'test-password',
         EMAIL_FROM: 'noreply@test.com',
         EMAIL_FROM_NAME: 'Test Platform',
-        FRONTEND_URL: 'http://localhost:3001',
+        FRONTEND_URL: 'http://localhost:8080',
       };
       return config[key as keyof typeof config];
     });
@@ -85,7 +85,7 @@ describe('EmailService', () => {
       await service.sendVerificationEmail('test@example.com', 'Test User', 'test-token');
 
       const callArgs = mockTransporter.sendMail.mock.calls[0][0];
-      expect(callArgs.html).toContain('http://localhost:3001/verify-email?token=test-token');
+      expect(callArgs.html).toContain('http://localhost:8080/verify-email?token=test-token');
     });
 
     it('should handle missing user name', async () => {

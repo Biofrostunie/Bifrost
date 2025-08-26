@@ -35,7 +35,40 @@ async function bootstrap() {
       disableErrorMessages: configService.get('NODE_ENV') === 'production',
     }),
   );
+// configuração do cors
+    const corsOrigins = [
+    'http://localhost:8080',
+    'http://localhost:3001',
+    'http://localhost:3000',
+    configService.get('FRONTEND_URL', 'http://localhost:8080'),
+    ...(configService.get<string>('CORS_ORIGIN') || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean),
+  ];
+  const corsMethods = (configService.get<string>('CORS_METHODS') || 'GET,POST,PUT,DELETE,PATCH,OPTIONS')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const corsAllowedHeaders = (configService.get<string>('CORS_ALLOWED_HEADERS') || 'Origin,X-Requested-With,Content-Type,Accept,Authorization,X-Request-ID,X-RateLimit-Limit,X-RateLimit-Remaining,X-RateLimit-Reset')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const corsExposedHeaders = (configService.get<string>('CORS_EXPOSED_HEADERS') || 'X-Request-ID,X-RateLimit-Limit,X-RateLimit-Remaining,X-RateLimit-Reset,X-Processing-Time,Content-Disposition')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const corsCredentials = (configService.get<string>('CORS_CREDENTIALS') || 'true') === 'true';
 
+  app.enableCors({
+    origin: corsOrigins,
+    methods: corsMethods,
+    allowedHeaders: corsAllowedHeaders,
+    exposedHeaders: corsExposedHeaders,
+    credentials: corsCredentials,
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+  });
   // Global exception filter
   app.useGlobalFilters(new HttpExceptionFilter());
 
