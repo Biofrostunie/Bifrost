@@ -4,10 +4,12 @@ import { Decimal } from '@prisma/client/runtime/library';
 
 import { InvestmentSimulationsService } from './investment-simulations.service';
 import { InvestmentSimulationsRepository } from '../repositories/investment-simulations.repository';
+import { CacheService } from '../../redis/cache.service';
 
 describe('InvestmentSimulationsService', () => {
   let service: InvestmentSimulationsService;
   let repository: jest.Mocked<InvestmentSimulationsRepository>;
+  let cacheService: jest.Mocked<CacheService>;
 
   const mockSimulation = {
     id: 'simulation-id',
@@ -29,6 +31,13 @@ describe('InvestmentSimulationsService', () => {
       delete: jest.fn(),
     };
 
+    const mockCacheService = {
+      get: jest.fn(),
+      set: jest.fn(),
+      del: jest.fn(),
+      delPattern: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         InvestmentSimulationsService,
@@ -36,11 +45,16 @@ describe('InvestmentSimulationsService', () => {
           provide: InvestmentSimulationsRepository,
           useValue: mockRepository,
         },
+        {
+          provide: CacheService,
+          useValue: mockCacheService,
+        },
       ],
     }).compile();
 
     service = module.get<InvestmentSimulationsService>(InvestmentSimulationsService);
     repository = module.get(InvestmentSimulationsRepository);
+    cacheService = module.get(CacheService);
   });
 
   afterEach(() => {

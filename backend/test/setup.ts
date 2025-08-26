@@ -172,6 +172,6 @@ process.env.SMTP_USER = 'test@test.com';
 process.env.SMTP_PASS = 'test-password';
 process.env.EMAIL_FROM = 'noreply@test.com';
 process.env.EMAIL_FROM_NAME = 'Test Platform';
-process.env.FRONTEND_URL = 'http://localhost:8080';
+process.env.FRONTEND_URL = 'http://localhost:3001';
 process.env.PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = 'true';
 process.env.PUPPETEER_EXECUTABLE_PATH = '/usr/bin/chromium-browser';

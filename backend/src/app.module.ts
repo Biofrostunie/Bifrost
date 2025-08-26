@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerGuard } from '@nestjs/throttler';
 
 // Core modules
 import { PrismaModule } from './prisma/prisma.module';
 import { TrpcModule } from './trpc/trpc.module';
+import { RedisModule } from './redis/redis.module';
 
 // Feature modules
 import { AuthModule } from './auth/auth.module';
@@ -15,6 +16,10 @@ import { ExpensesModule } from './expenses/expenses.module';
 import { IncomesModule } from './incomes/incomes.module';
 import { InvestmentSimulationsModule } from './investment-simulations/investment-simulations.module';
 import { FinancialConceptsModule } from './financial-concepts/financial-concepts.module';
+import { InvestmentRatesModule } from './investment-rates/investment-rates.module';
+
+// Redis interceptors
+import { CacheInterceptor } from './redis/interceptors/cache.interceptor';
 
 @Module({
   imports: [
@@ -65,6 +70,7 @@ import { FinancialConceptsModule } from './financial-concepts/financial-concepts
 
     // Core modules
     PrismaModule,
+    RedisModule,
     TrpcModule,
 
     // Feature modules
@@ -74,12 +80,17 @@ import { FinancialConceptsModule } from './financial-concepts/financial-concepts
     IncomesModule,
     InvestmentSimulationsModule,
     FinancialConceptsModule,
+    InvestmentRatesModule,
   ],
   controllers: [],
   providers: [
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: CacheInterceptor,
     },
   ],
 })

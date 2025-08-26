@@ -5,6 +5,8 @@ import * as crypto from 'crypto';
 
 import { UsersService } from '../../users/services/users.service';
 import { EmailService } from '../../common/services/email.service';
+import { SessionService } from '../../redis/session.service';
+import { RateLimitService } from '../../redis/rate-limit.service';
 import { RegisterDto } from '../dto/register.dto';
 import { ResetPasswordDto } from '../dto/reset-password.dto';
 import { CurrentUserType } from '../../common/decorators/current-user.decorator';
@@ -21,10 +23,27 @@ export class AuthService {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly emailService: EmailService,
+    private readonly sessionService: SessionService,
+    private readonly rateLimitService: RateLimitService,
   ) {}
 
   async register(registerDto: RegisterDto, context?: AuthContext) {
     this.logger.log(`Registration attempt for email: ${registerDto.email}`);
+    
+    // Check rate limit for registration
+    if (context?.ip) {
+      const rateLimitResult = await this.rateLimitService.checkRateLimit(
+        `register:${context.ip}`,
+        {
+          windowMs: 15 * 60 * 1000, // 15 minutes
+          maxRequests: 5, // 5 registrations per 15 minutes per IP
+        }
+      );
+
+      if (!rateLimitResult.allowed) {
+        throw new UnauthorizedException('Too many registration attempts. Please try again later.');
+      }
+    }
     
     const existingUser = await this.usersService.findByEmail(registerDto.email);
     
@@ -81,14 +100,44 @@ export class AuthService {
   async login(user: CurrentUserType, context?: AuthContext) {
     this.logger.log(`Login successful for user: ${user.email}`);
     
+    // Check rate limit for login
+    if (context?.ip) {
+      const rateLimitResult = await this.rateLimitService.checkRateLimit(
+        `login:${context.ip}`,
+        {
+          windowMs: 15 * 60 * 1000, // 15 minutes
+          maxRequests: 10, // 10 login attempts per 15 minutes per IP
+        }
+      );
+
+      if (!rateLimitResult.allowed) {
+        throw new UnauthorizedException('Too many login attempts. Please try again later.');
+      }
+    }
+    
     // Payload simples sem duplicação de campos
     const payload = { 
       email: user.email, 
       sub: user.id,
-      // Removido iss e aud do payload para evitar conflito
     };
     
     const accessToken = this.jwtService.sign(payload);
+    
+    // Create session
+    try {
+      await this.sessionService.createSession(accessToken, {
+        userId: user.id,
+        email: user.email,
+        fullName: user.fullName,
+        isEmailVerified: user.isEmailVerified || false,
+        loginAt: new Date(),
+        lastActivity: new Date(),
+        ipAddress: context?.ip,
+      });
+    } catch (error) {
+      this.logger.warn(`Failed to create session for user ${user.email}:`, error);
+      // Don't fail login if session creation fails
+    }
     
     return {
       access_token: accessToken,
@@ -98,6 +147,15 @@ export class AuthService {
         fullName: user.fullName,
       },
     };
+  }
+
+  async logout(token: string) {
+    try {
+      await this.sessionService.deleteSession(token);
+      this.logger.log(`Session deleted for token: ${token.substring(0, 10)}...`);
+    } catch (error) {
+      this.logger.warn(`Failed to delete session:`, error);
+    }
   }
 
   async verifyEmail(token: string) {
@@ -190,6 +248,14 @@ export class AuthService {
       passwordResetToken: undefined,
       passwordResetExpires: undefined,
     });
+
+    // Invalidate all sessions for this user
+    try {
+      await this.sessionService.deleteUserSessions(user.id);
+      this.logger.log(`All sessions invalidated for user: ${user.email}`);
+    } catch (error) {
+      this.logger.warn(`Failed to invalidate sessions for user ${user.email}:`, error);
+    }
 
     this.logger.log(`Password reset successfully for user: ${user.email}`);
 

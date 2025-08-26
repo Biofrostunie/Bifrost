@@ -6,6 +6,7 @@ import { ExpensesService } from './expenses.service';
 import { ExpensesRepository } from '../repositories/expenses.repository';
 import { PdfService } from '../../common/services/pdf.service';
 import { UsersService } from '../../users/services/users.service';
+import { CacheService } from '../../redis/cache.service';
 
 describe('ExpensesService', () => {
   let service: ExpensesService;
@@ -64,6 +65,13 @@ describe('ExpensesService', () => {
       findById: jest.fn(),
     };
 
+    const mockCacheService = {
+      get: jest.fn(),
+      set: jest.fn(),
+      del: jest.fn(),
+      delPattern: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ExpensesService,
@@ -78,6 +86,10 @@ describe('ExpensesService', () => {
         {
           provide: UsersService,
           useValue: mockUsersService,
+        },
+        {
+          provide: CacheService,
+          useValue: mockCacheService,
         },
       ],
     }).compile();

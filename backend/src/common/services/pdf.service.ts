@@ -3,6 +3,7 @@ import * as puppeteer from 'puppeteer';
 import * as handlebars from 'handlebars';
 import * as moment from 'moment';
 import { Expense } from '@prisma/client';
+import { CacheService } from '../../redis/cache.service';
 
 export interface ExpenseReportData {
   expenses: (Expense & {
@@ -25,6 +26,7 @@ export interface ExpenseReportData {
     name: string;
     total: number;
     percentage: number;
+    color: string;
   }[];
 }
 
@@ -35,6 +37,15 @@ export class PdfService implements OnModuleDestroy {
   private isInitializing = false;
   private initializationPromise: Promise<puppeteer.Browser> | null = null;
 
+  // Cores predefinidas para categorias
+  private readonly categoryColors = [
+    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+    '#FF9F40', '#E7E9ED', '#71B37C', '#FFA726', '#AB47BC',
+    '#26C6DA', '#66BB6A', '#FFCA28', '#8D6E63', '#78909C'
+  ];
+
+  constructor(private readonly cacheService: CacheService) {}
+
   async generateExpenseReport(data: ExpenseReportData): Promise<Buffer> {
     const requestId = Math.random().toString(36).substring(7);
     this.logger.log(`[${requestId}] Starting PDF generation for expense report`);
@@ -42,24 +53,42 @@ export class PdfService implements OnModuleDestroy {
     let page: puppeteer.Page | null = null;
     
     try {
-      // Validate input data first
+      // Verificar cache primeiro
+      const cacheKey = `pdf_report:${JSON.stringify(data)}`;
+      const cachedPdf = await this.cacheService.get<string>(cacheKey);
+      
+      if (cachedPdf) {
+        this.logger.log(`[${requestId}] PDF found in cache`);
+        return Buffer.from(cachedPdf, 'base64');
+      }
+
+      // Validar dados de entrada
       this.validateReportData(data, requestId);
 
-      // Get or create browser instance with retry logic
+      // Adicionar cores às categorias se não existirem
+      const enhancedData = this.enhanceDataWithColors(data);
+
+      // Obter ou criar instância do browser
       const browser = await this.getBrowserInstanceWithRetry(requestId);
       
-      // Create new page with enhanced configuration
+      // Criar nova página
       page = await this.createPage(browser, requestId);
       
-      // Generate and set HTML content
-      const htmlContent = this.generateReportHTML(data, requestId);
+      // Gerar e definir conteúdo HTML com gráficos
+      const htmlContent = this.generateReportHTML(enhancedData, requestId);
       await this.setPageContent(page, htmlContent, requestId);
       
-      // Generate PDF with timeout
+      // Aguardar renderização dos gráficos
+      await this.waitForChartsToRender(page, requestId);
+      
+      // Gerar PDF
       const pdfBuffer = await this.generatePDF(page, requestId);
       
-      // Close page (but keep browser for reuse)
+      // Fechar página (mas manter browser para reutilização)
       await this.safeClosePage(page, requestId);
+      
+      // Cache do PDF por 30 minutos
+      await this.cacheService.set(cacheKey, pdfBuffer.toString('base64'), { ttl: 1800 });
       
       this.logger.log(`[${requestId}] PDF generated successfully, size: ${pdfBuffer.length} bytes`);
       return pdfBuffer;
@@ -72,18 +101,30 @@ export class PdfService implements OnModuleDestroy {
         userEmail: data?.user?.email || 'unknown',
       });
       
-      // Ensure page is closed on error
+      // Garantir que a página seja fechada em caso de erro
       if (page) {
         await this.safeClosePage(page, requestId);
       }
       
-      // Close browser on critical errors
+      // Fechar browser em erros críticos
       if (this.isCriticalError(error)) {
         await this.closeBrowser(requestId);
       }
       
       throw this.createUserFriendlyError(error);
     }
+  }
+
+  private enhanceDataWithColors(data: ExpenseReportData): ExpenseReportData {
+    const enhancedCategories = data.categories.map((category, index) => ({
+      ...category,
+      color: category.color || this.categoryColors[index % this.categoryColors.length],
+    }));
+
+    return {
+      ...data,
+      categories: enhancedCategories,
+    };
   }
 
   private validateReportData(data: ExpenseReportData, requestId: string): void {
@@ -116,10 +157,10 @@ export class PdfService implements OnModuleDestroy {
           throw error;
         }
         
-        // Close any existing browser before retry
+        // Fechar qualquer browser existente antes de tentar novamente
         await this.closeBrowser(requestId);
         
-        // Wait before retry
+        // Aguardar antes de tentar novamente
         await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
       }
     }
@@ -128,16 +169,16 @@ export class PdfService implements OnModuleDestroy {
   }
 
   private async getBrowserInstance(requestId: string): Promise<puppeteer.Browser> {
-    // If we're already initializing, wait for that to complete
+    // Se já estamos inicializando, aguardar a conclusão
     if (this.isInitializing && this.initializationPromise) {
       this.logger.log(`[${requestId}] Waiting for existing browser initialization`);
       return await this.initializationPromise;
     }
 
-    // Check if existing browser is still connected
+    // Verificar se o browser existente ainda está conectado
     if (this.browserInstance && this.browserInstance.isConnected()) {
       try {
-        // Test the browser by creating a test page
+        // Testar o browser criando uma página de teste
         const testPage = await this.browserInstance.newPage();
         await testPage.close();
         this.logger.log(`[${requestId}] Reusing existing browser instance`);
@@ -148,7 +189,7 @@ export class PdfService implements OnModuleDestroy {
       }
     }
 
-    // Create new browser instance
+    // Criar nova instância do browser
     this.isInitializing = true;
     this.initializationPromise = this.createNewBrowser(requestId);
     
@@ -164,7 +205,7 @@ export class PdfService implements OnModuleDestroy {
   private async createNewBrowser(requestId: string): Promise<puppeteer.Browser> {
     this.logger.log(`[${requestId}] Creating new browser instance`);
     
-    // Enhanced browser configuration for maximum compatibility
+    // Configuração aprimorada do browser para máxima compatibilidade
     const browserOptions: puppeteer.LaunchOptions = {
       headless: true,
       args: [
@@ -199,24 +240,6 @@ export class PdfService implements OnModuleDestroy {
         '--disable-software-rasterizer',
         '--memory-pressure-off',
         '--max_old_space_size=4096',
-        '--disable-background-timer-throttling',
-        '--disable-backgrounding-occluded-windows',
-        '--disable-renderer-backgrounding',
-        '--disable-features=TranslateUI',
-        '--disable-component-extensions-with-background-pages',
-        '--disable-default-apps',
-        '--disable-extensions',
-        '--disable-plugins',
-        '--disable-preconnect',
-        '--disable-print-preview',
-        '--disable-sync',
-        '--disable-web-security',
-        '--no-default-browser-check',
-        '--no-first-run',
-        '--no-pings',
-        '--no-service-autorun',
-        '--password-store=basic',
-        '--use-mock-keychain',
         '--single-process',
       ],
       timeout: 60000,
@@ -227,7 +250,7 @@ export class PdfService implements OnModuleDestroy {
       ignoreDefaultArgs: ['--disable-extensions'],
     };
 
-    // Use system Chromium if available (for Docker)
+    // Usar Chromium do sistema se disponível (para Docker)
     if (process.env.PUPPETEER_EXECUTABLE_PATH) {
       browserOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
       this.logger.log(`[${requestId}] Using system Chromium: ${process.env.PUPPETEER_EXECUTABLE_PATH}`);
@@ -237,21 +260,13 @@ export class PdfService implements OnModuleDestroy {
       const browser = await puppeteer.launch(browserOptions);
       this.logger.log(`[${requestId}] Browser launched successfully`);
       
-      // Set up error handlers
+      // Configurar handlers de erro
       browser.on('disconnected', () => {
         this.logger.warn(`[${requestId}] Browser disconnected`);
         this.browserInstance = null;
       });
 
-      browser.on('targetcreated', () => {
-        this.logger.debug(`[${requestId}] Browser target created`);
-      });
-
-      browser.on('targetdestroyed', () => {
-        this.logger.debug(`[${requestId}] Browser target destroyed`);
-      });
-
-      // Test browser functionality
+      // Testar funcionalidade do browser
       const testPage = await browser.newPage();
       await testPage.goto('data:text/html,<h1>Test</h1>', { waitUntil: 'domcontentloaded' });
       await testPage.close();
@@ -263,7 +278,6 @@ export class PdfService implements OnModuleDestroy {
       this.logger.error(`[${requestId}] Failed to launch browser:`, {
         error: error instanceof Error ? error.message : 'Unknown error',
         executablePath: browserOptions.executablePath,
-        args: browserOptions.args?.slice(0, 10),
       });
       throw new Error(`Failed to initialize PDF generator: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
@@ -275,32 +289,38 @@ export class PdfService implements OnModuleDestroy {
     try {
       const page = await browser.newPage();
       
-      // Enhanced page configuration
+      // Configuração aprimorada da página
       await page.setViewport({ 
         width: 1200, 
         height: 800,
         deviceScaleFactor: 1,
       });
 
-      // Set user agent
+      // Definir user agent
       await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 
-      // Disable images and other resources to speed up loading
+      // Permitir recursos necessários para Chart.js
       await page.setRequestInterception(true);
       page.on('request', (req) => {
         const resourceType = req.resourceType();
-        if (['image', 'stylesheet', 'font', 'media'].includes(resourceType)) {
+        const url = req.url();
+        
+        // Permitir Chart.js e recursos essenciais
+        if (url.includes('chart.js') || url.includes('cdn.jsdelivr.net') || 
+            resourceType === 'document' || resourceType === 'script') {
+          req.continue();
+        } else if (['image', 'stylesheet', 'font', 'media'].includes(resourceType)) {
           req.abort();
         } else {
           req.continue();
         }
       });
 
-      // Set timeouts
+      // Definir timeouts
       page.setDefaultTimeout(45000);
       page.setDefaultNavigationTimeout(45000);
 
-      // Handle page errors
+      // Tratar erros da página
       page.on('error', (error) => {
         this.logger.error(`[${requestId}] Page error:`, error);
       });
@@ -323,34 +343,40 @@ export class PdfService implements OnModuleDestroy {
     
     try {
       await page.setContent(htmlContent, { 
-        waitUntil: ['domcontentloaded'],
+        waitUntil: ['domcontentloaded', 'networkidle0'],
         timeout: 30000,
-      });
-
-      // Wait for page to be ready with additional checks
-      await page.evaluate(() => {
-        return new Promise<void>((resolve, reject) => {
-          const timeout = setTimeout(() => {
-            reject(new Error('Page ready timeout'));
-          }, 10000);
-
-          const checkReady = () => {
-            if (document.readyState === 'complete') {
-              clearTimeout(timeout);
-              resolve();
-            } else {
-              setTimeout(checkReady, 100);
-            }
-          };
-
-          checkReady();
-        });
       });
 
       this.logger.log(`[${requestId}] Page content set successfully`);
     } catch (error) {
       this.logger.error(`[${requestId}] Error setting page content:`, error);
       throw new Error('Failed to load report content');
+    }
+  }
+
+  private async waitForChartsToRender(page: puppeteer.Page, requestId: string): Promise<void> {
+    this.logger.log(`[${requestId}] Waiting for charts to render`);
+    
+    try {
+      // Aguardar Chart.js carregar e os gráficos serem renderizados
+      await page.waitForFunction(
+        () => {
+          // Verificar se Chart.js está disponível no contexto global
+          return (window as any).Chart && 
+                 document.querySelector('#categoryPieChart') && 
+                 document.querySelector('#essentialPieChart');
+        },
+        { timeout: 10000 }
+      );
+
+      // Aguardar um pouco mais para garantir que os gráficos estejam completamente renderizados
+      // Usar setTimeout em vez de waitForTimeout que não existe
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      this.logger.log(`[${requestId}] Charts rendered successfully`);
+    } catch (error) {
+      this.logger.warn(`[${requestId}] Charts may not have rendered properly:`, error);
+      // Não falhar se os gráficos não renderizarem - o PDF ainda pode ser gerado
     }
   }
 
@@ -417,7 +443,6 @@ export class PdfService implements OnModuleDestroy {
 
   private createUserFriendlyError(error: unknown): Error {
     if (error instanceof Error) {
-      // Mapear erros específicos para mensagens esperadas nos testes
       if (error.message.includes('timeout') || error.message.includes('Navigation timeout')) {
         return new Error('PDF generation timed out. Please try again with fewer expenses or a smaller date range.');
       } else if (error.message.includes('Protocol error') || error.message.includes('Target closed')) {
@@ -447,7 +472,7 @@ export class PdfService implements OnModuleDestroy {
     }
   }
 
-  // Cleanup method for graceful shutdown
+  // Método de limpeza para desligamento gracioso
   async onModuleDestroy(): Promise<void> {
     this.logger.log('PdfService shutting down...');
     await this.closeBrowser('shutdown');
@@ -455,7 +480,7 @@ export class PdfService implements OnModuleDestroy {
 
   private generateReportHTML(data: ExpenseReportData, requestId: string): string {
     try {
-      this.logger.log(`[${requestId}] Generating HTML template`);
+      this.logger.log(`[${requestId}] Generating HTML template with charts`);
 
       const template = `
       <!DOCTYPE html>
@@ -464,6 +489,7 @@ export class PdfService implements OnModuleDestroy {
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>Relatório de Despesas - Bifröst</title>
+          <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
           <style>
               * {
                   margin: 0;
@@ -576,6 +602,36 @@ export class PdfService implements OnModuleDestroy {
                   font-weight: 600;
               }
               
+              .charts-section {
+                  display: grid;
+                  grid-template-columns: 1fr 1fr;
+                  gap: 30px;
+                  margin-bottom: 30px;
+              }
+              
+              .chart-container {
+                  background: white;
+                  padding: 20px;
+                  border-radius: 8px;
+                  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                  text-align: center;
+                  min-height: 400px;
+              }
+              
+              .chart-title {
+                  font-size: 16px;
+                  font-weight: 600;
+                  color: #333;
+                  margin-bottom: 15px;
+              }
+              
+              .chart-canvas {
+                  width: 100% !important;
+                  height: 300px !important;
+                  max-width: 300px;
+                  margin: 0 auto;
+              }
+              
               .category-item {
                   display: flex;
                   justify-content: space-between;
@@ -590,6 +646,16 @@ export class PdfService implements OnModuleDestroy {
               .category-name {
                   font-weight: 600;
                   color: #333;
+                  display: flex;
+                  align-items: center;
+              }
+              
+              .category-color {
+                  width: 16px;
+                  height: 16px;
+                  border-radius: 50%;
+                  margin-right: 10px;
+                  display: inline-block;
               }
               
               .category-amount {
@@ -679,6 +745,16 @@ export class PdfService implements OnModuleDestroy {
                   margin-bottom: 10px;
                   color: #667eea;
               }
+
+              @media print {
+                  .charts-section {
+                      page-break-inside: avoid;
+                  }
+                  
+                  .chart-container {
+                      break-inside: avoid;
+                  }
+              }
           </style>
       </head>
       <body>
@@ -725,11 +801,25 @@ export class PdfService implements OnModuleDestroy {
               </div>
               
               {{#if categories.length}}
+              <div class="charts-section">
+                  <div class="chart-container">
+                      <div class="chart-title">Distribuição por Categoria</div>
+                      <canvas id="categoryPieChart" class="chart-canvas"></canvas>
+                  </div>
+                  <div class="chart-container">
+                      <div class="chart-title">Despesas Essenciais vs Não Essenciais</div>
+                      <canvas id="essentialPieChart" class="chart-canvas"></canvas>
+                  </div>
+              </div>
+              
               <div class="categories-section">
                   <h2 class="section-title">Despesas por Categoria</h2>
                   {{#each categories}}
                   <div class="category-item">
-                      <span class="category-name">{{this.name}}</span>
+                      <span class="category-name">
+                          <span class="category-color" style="background-color: {{this.color}};"></span>
+                          {{this.name}}
+                      </span>
                       <div>
                           <span class="category-amount">R$ {{formatCurrency this.total}}</span>
                           <span class="category-percentage">({{this.percentage}}%)</span>
@@ -775,9 +865,6 @@ export class PdfService implements OnModuleDestroy {
                       <h3>Nenhuma despesa encontrada</h3>
                       <p>Não foram encontradas despesas para o período e filtros selecionados.</p>
                       <p><strong>Período:</strong> {{period.startDate}} até {{period.endDate}}</p>
-                      {{#if hasFilters}}
-                      <p><strong>Filtros aplicados:</strong> Categoria: {{filterCategory}}, Essencial: {{filterEssential}}</p>
-                      {{/if}}
                   </div>
                   {{/if}}
               </div>
@@ -788,11 +875,128 @@ export class PdfService implements OnModuleDestroy {
               <p>© 2024 - Todos os direitos reservados</p>
               <p>Gerado em: {{currentDate}}</p>
           </div>
+
+          <script>
+              // Aguardar o DOM e Chart.js estarem prontos
+              function initializeCharts() {
+                  // Verificar se Chart.js está disponível
+                  if (typeof window.Chart === 'undefined') {
+                      setTimeout(initializeCharts, 100);
+                      return;
+                  }
+
+                  // Dados das categorias com valores absolutos
+                  const categoryData = {{{categoryChartData}}};
+                  const essentialData = {{{essentialChartData}}};
+
+                  // Configuração comum para gráficos de pizza
+                  const commonOptions = {
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                          legend: {
+                              position: 'bottom',
+                              labels: {
+                                  padding: 15,
+                                  usePointStyle: true,
+                                  font: {
+                                      size: 11
+                                  },
+                                  generateLabels: function(chart) {
+                                      const data = chart.data;
+                                      if (data.labels.length && data.datasets.length) {
+                                          return data.labels.map((label, i) => {
+                                              const dataset = data.datasets[0];
+                                              const value = dataset.data[i];
+                                              const total = dataset.data.reduce((a, b) => a + b, 0);
+                                              const percentage = ((value / total) * 100).toFixed(1);
+                                              return {
+                                                  text: label + ' (' + percentage + '%)',
+                                                  fillStyle: dataset.backgroundColor[i],
+                                                  strokeStyle: dataset.borderColor[i],
+                                                  lineWidth: dataset.borderWidth,
+                                                  hidden: false,
+                                                  index: i
+                                              };
+                                          });
+                                      }
+                                      return [];
+                                  }
+                              }
+                          },
+                          tooltip: {
+                              callbacks: {
+                                  label: function(context) {
+                                      const label = context.label || '';
+                                      const value = context.parsed;
+                                      const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                      const percentage = ((value / total) * 100).toFixed(1);
+                                      return label + ': R$ ' + value.toFixed(2) + ' (' + percentage + '%)';
+                                  }
+                              }
+                          }
+                      },
+                      // Configuração específica para melhorar a visualização
+                      elements: {
+                          arc: {
+                              borderWidth: 2
+                          }
+                      }
+                  };
+
+                  // Configuração do gráfico de categorias
+                  if (categoryData.labels.length > 0 && categoryData.datasets[0].data.some(val => val > 0)) {
+                      const categoryCtx = document.getElementById('categoryPieChart');
+                      if (categoryCtx) {
+                          new window.Chart(categoryCtx, {
+                              type: 'pie',
+                              data: categoryData,
+                              options: {
+                                  ...commonOptions,
+                                  plugins: {
+                                      ...commonOptions.plugins,
+                                      title: {
+                                          display: false
+                                      }
+                                  }
+                              }
+                          });
+                      }
+                  }
+
+                  // Configuração do gráfico essencial vs não essencial
+                  if (essentialData.labels.length > 0 && essentialData.datasets[0].data.some(val => val > 0)) {
+                      const essentialCtx = document.getElementById('essentialPieChart');
+                      if (essentialCtx) {
+                          new window.Chart(essentialCtx, {
+                              type: 'pie',
+                              data: essentialData,
+                              options: {
+                                  ...commonOptions,
+                                  plugins: {
+                                      ...commonOptions.plugins,
+                                      title: {
+                                          display: false
+                                      }
+                                  }
+                              }
+                          });
+                      }
+                  }
+              }
+
+              // Inicializar quando o DOM estiver pronto
+              if (document.readyState === 'loading') {
+                  document.addEventListener('DOMContentLoaded', initializeCharts);
+              } else {
+                  initializeCharts();
+              }
+          </script>
       </body>
       </html>
       `;
 
-      // Register Handlebars helpers with error handling
+      // Registrar helpers do Handlebars com tratamento de erro
       handlebars.registerHelper('formatCurrency', (amount) => {
         try {
           const numAmount = typeof amount === 'number' ? amount : parseFloat(amount) || 0;
@@ -815,14 +1019,20 @@ export class PdfService implements OnModuleDestroy {
         }
       });
 
-      // Calculate additional data with error handling
+      // Calcular dados adicionais
       const averageAmount = data.expenses.length > 0 ? data.totalAmount / data.expenses.length : 0;
       const currentDate = moment().format('DD/MM/YYYY HH:mm:ss');
+
+      // Preparar dados para gráficos com valores absolutos
+      const categoryChartData = this.prepareCategoryChartData(data.categories);
+      const essentialChartData = this.prepareEssentialChartData(data.expenses);
 
       const templateData = {
         ...data,
         averageAmount,
         currentDate,
+        categoryChartData: JSON.stringify(categoryChartData),
+        essentialChartData: JSON.stringify(essentialChartData),
         user: {
           fullName: data.user.fullName || 'Usuário',
           email: data.user.email || 'email@exemplo.com',
@@ -831,20 +1041,71 @@ export class PdfService implements OnModuleDestroy {
           startDate: data.period.startDate || 'Início',
           endDate: data.period.endDate || 'Fim',
         },
-        hasFilters: !!(data.period.startDate !== 'Início' || data.period.endDate !== 'Fim'),
-        filterCategory: data.period.startDate !== 'Início' ? 'Sim' : 'Não',
-        filterEssential: data.period.endDate !== 'Fim' ? 'Sim' : 'Não',
       };
 
       const compiledTemplate = handlebars.compile(template);
       const htmlContent = compiledTemplate(templateData);
 
-      this.logger.log(`[${requestId}] HTML template generated successfully (${htmlContent.length} characters)`);
+      this.logger.log(`[${requestId}] HTML template with enhanced charts generated successfully (${htmlContent.length} characters)`);
       return htmlContent;
 
     } catch (error) {
       this.logger.error(`[${requestId}] Error generating HTML template:`, error);
       throw new Error('Failed to generate report template');
     }
+  }
+
+  private prepareCategoryChartData(categories: ExpenseReportData['categories']) {
+    // Filtrar categorias com valores maiores que zero
+    const validCategories = categories.filter(cat => cat.total > 0);
+    
+    return {
+      labels: validCategories.map(cat => cat.name),
+      datasets: [{
+        data: validCategories.map(cat => cat.total), // Usar valores absolutos
+        backgroundColor: validCategories.map(cat => cat.color),
+        borderColor: validCategories.map(cat => cat.color),
+        borderWidth: 2,
+        hoverOffset: 4
+      }]
+    };
+  }
+
+  private prepareEssentialChartData(expenses: ExpenseReportData['expenses']) {
+    const essentialTotal = expenses
+      .filter(exp => exp.essential)
+      .reduce((sum, exp) => sum + (typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount.toString())), 0);
+    
+    const nonEssentialTotal = expenses
+      .filter(exp => !exp.essential)
+      .reduce((sum, exp) => sum + (typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount.toString())), 0);
+
+    const data = [];
+    const labels = [];
+    const colors = [];
+
+    // Apenas adicionar categorias com valores maiores que zero
+    if (essentialTotal > 0) {
+      data.push(essentialTotal);
+      labels.push('Essenciais');
+      colors.push('#4caf50');
+    }
+
+    if (nonEssentialTotal > 0) {
+      data.push(nonEssentialTotal);
+      labels.push('Não Essenciais');
+      colors.push('#ff9800');
+    }
+
+    return {
+      labels,
+      datasets: [{
+        data, // Usar valores absolutos
+        backgroundColor: colors,
+        borderColor: colors,
+        borderWidth: 2,
+        hoverOffset: 4
+      }]
+    };
   }
 }

@@ -5,6 +5,8 @@ import { UpdateExpenseDto } from '../dto/update-expense.dto';
 import { GetExpensesQueryDto } from '../dto/get-expenses-query.dto';
 import { PdfService, ExpenseReportData } from '../../common/services/pdf.service';
 import { UsersService } from '../../users/services/users.service';
+import { CacheService } from '../../redis/cache.service';
+import { Cache } from '../../redis/decorators/cache.decorator';
 
 @Injectable()
 export class ExpensesService {
@@ -14,8 +16,10 @@ export class ExpensesService {
     private readonly expensesRepository: ExpensesRepository,
     private readonly pdfService: PdfService,
     private readonly usersService: UsersService,
+    private readonly cacheService: CacheService,
   ) {}
 
+  @Cache({ ttl: 300, prefix: 'expenses' }) // Cache for 5 minutes
   async getExpenses(userId: string, query: GetExpensesQueryDto) {
     this.logger.log(`Getting expenses for user: ${userId}`);
     return this.expensesRepository.findByUserId(userId, query);
@@ -23,12 +27,16 @@ export class ExpensesService {
 
   async createExpense(userId: string, createExpenseDto: CreateExpenseDto) {
     this.logger.log(`Creating expense for user: ${userId}`);
-    const { essential = false, ...rest } = createExpenseDto;
-    return this.expensesRepository.create({
-      ...rest,
-      essential,
+    
+    const expense = await this.expensesRepository.create({
+      ...createExpenseDto,
       userId,
     });
+
+    // Invalidate cache for this user
+    await this.invalidateUserExpenseCache(userId);
+
+    return expense;
   }
 
   async getExpenseById(userId: string, expenseId: string) {
@@ -52,15 +60,26 @@ export class ExpensesService {
   ) {
     await this.getExpenseById(userId, expenseId); // Validates ownership
 
-    return this.expensesRepository.update(expenseId, updateExpenseDto);
+    const updatedExpense = await this.expensesRepository.update(expenseId, updateExpenseDto);
+
+    // Invalidate cache for this user
+    await this.invalidateUserExpenseCache(userId);
+
+    return updatedExpense;
   }
 
   async deleteExpense(userId: string, expenseId: string) {
     await this.getExpenseById(userId, expenseId); // Validates ownership
 
-    return this.expensesRepository.delete(expenseId);
+    const deletedExpense = await this.expensesRepository.delete(expenseId);
+
+    // Invalidate cache for this user
+    await this.invalidateUserExpenseCache(userId);
+
+    return deletedExpense;
   }
 
+  @Cache({ ttl: 600, prefix: 'expense_totals' }) // Cache for 10 minutes
   async getTotalExpensesByCategory(userId: string, startDate?: Date, endDate?: Date) {
     return this.expensesRepository.getTotalByCategory(userId, startDate, endDate);
   }
@@ -74,6 +93,15 @@ export class ExpensesService {
     this.logger.log(`[${requestId}] Query parameters:`, query);
 
     try {
+      // Check cache first with enhanced key
+      const cacheKey = `pdf_report:${userId}:${JSON.stringify(query)}:${Date.now().toString().slice(0, -5)}`;
+      const cachedPdf = await this.cacheService.get<string>(cacheKey);
+      
+      if (cachedPdf) {
+        this.logger.log(`[${requestId}] PDF found in cache`);
+        return Buffer.from(cachedPdf, 'base64');
+      }
+
       // Validate user exists first
       const user = await this.usersService.findById(userId);
       if (!user) {
@@ -105,7 +133,7 @@ export class ExpensesService {
         this.logger.log(`[${requestId}] User has ${allExpenses.length} total expenses`);
         
         if (allExpenses.length > 0) {
-          this.logger.log(`[${requestId}] Sample expenses:`, allExpenses.slice(0, 3).map(e => ({
+          this.logger.log(`[${requestId}] Sample expenses:`, allExpenses.slice(0, 3).map((e: any) => ({
             description: e.description,
             amount: e.amount.toString(),
             category: e.category,
@@ -135,20 +163,28 @@ export class ExpensesService {
 
       this.logger.log(`[${requestId}] Processed ${validExpenses.length} valid expenses, total: R$ ${totalAmount.toFixed(2)}`);
 
-      // Calculate categories
+      // Calculate categories with colors
       const categoryTotals = new Map<string, number>();
       validExpenses.forEach((expense) => {
         const current = categoryTotals.get(expense.category) || 0;
         categoryTotals.set(expense.category, current + expense.amount);
       });
 
-      const categories = Array.from(categoryTotals.entries()).map(([name, total]) => ({
+      // Predefined colors for categories
+      const categoryColors = [
+        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+        '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384',
+        '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'
+      ];
+
+      const categories = Array.from(categoryTotals.entries()).map(([name, total], index) => ({
         name,
         total,
         percentage: totalAmount > 0 ? Math.round((total / totalAmount) * 100) : 0,
+        color: categoryColors[index % categoryColors.length],
       }));
 
-      this.logger.log(`[${requestId}] Generated ${categories.length} category summaries:`, categories);
+      this.logger.log(`[${requestId}] Generated ${categories.length} category summaries with colors:`, categories);
 
       // Prepare report data
       const reportData: ExpenseReportData = {
@@ -165,13 +201,14 @@ export class ExpensesService {
         categories,
       };
 
-      this.logger.log(`[${requestId}] Report data prepared:`, {
+      this.logger.log(`[${requestId}] Report data prepared with enhanced features:`, {
         expenseCount: reportData.expenses.length,
         totalAmount: reportData.totalAmount,
         categoryCount: reportData.categories.length,
         userEmail: reportData.user.email,
         userFullName: reportData.user.fullName,
         period: reportData.period,
+        hasChartData: reportData.categories.length > 0,
       });
 
       // Generate PDF with enhanced error handling
@@ -182,7 +219,10 @@ export class ExpensesService {
           throw new Error('PDF generation returned empty buffer');
         }
 
-        this.logger.log(`[${requestId}] PDF generated successfully, size: ${pdfBuffer.length} bytes`);
+        // Cache the PDF for 30 minutes with shorter TTL for dynamic content
+        await this.cacheService.set(cacheKey, pdfBuffer.toString('base64'), { ttl: 1800 });
+
+        this.logger.log(`[${requestId}] Enhanced PDF with charts generated successfully, size: ${pdfBuffer.length} bytes`);
         return pdfBuffer;
         
       } catch (pdfError) {
@@ -210,6 +250,17 @@ export class ExpensesService {
 
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       throw new Error(`Failed to generate expense report: ${errorMessage}`);
+    }
+  }
+
+  private async invalidateUserExpenseCache(userId: string): Promise<void> {
+    try {
+      await this.cacheService.delPattern(`expenses:*${userId}*`);
+      await this.cacheService.delPattern(`expense_totals:*${userId}*`);
+      await this.cacheService.delPattern(`pdf_report:${userId}:*`);
+      this.logger.debug(`Cache invalidated for user: ${userId}`);
+    } catch (error) {
+      this.logger.warn(`Failed to invalidate cache for user ${userId}:`, error);
     }
   }
 

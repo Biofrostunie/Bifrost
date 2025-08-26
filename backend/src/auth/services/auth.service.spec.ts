@@ -7,6 +7,8 @@ import * as crypto from 'crypto';
 import { AuthService } from './auth.service';
 import { UsersService } from '../../users/services/users.service';
 import { EmailService } from '../../common/services/email.service';
+import { SessionService } from '../../redis/session.service';
+import { RateLimitService } from '../../redis/rate-limit.service';
 
 // Mock bcrypt
 jest.mock('bcryptjs');
@@ -62,6 +64,16 @@ describe('AuthService', () => {
       sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
     };
 
+    const mockSessionService = {
+      createSession: jest.fn().mockResolvedValue('session-id'),
+      invalidateSession: jest.fn().mockResolvedValue(undefined),
+      getSession: jest.fn().mockResolvedValue({ userId: 'user-id' }),
+    };
+
+    const mockRateLimitService = {
+      checkRateLimit: jest.fn().mockResolvedValue({ allowed: true }),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
@@ -76,6 +88,14 @@ describe('AuthService', () => {
         {
           provide: EmailService,
           useValue: mockEmailService,
+        },
+        {
+          provide: SessionService,
+          useValue: mockSessionService,
+        },
+        {
+          provide: RateLimitService,
+          useValue: mockRateLimitService,
         },
       ],
     }).compile();

@@ -10,23 +10,23 @@ datasource db {
 }
 
 model User {
-  id           String                   @id @default(uuid()) @db.Uuid
-  email        String                   @unique
-  passwordHash String
-  fullName     String?
-  phone        String?
-  address      String?
-  isEmailVerified Boolean               @default(false)
+  id                     String                   @id @default(uuid()) @db.Uuid
+  email                  String                   @unique
+  passwordHash           String
+  fullName               String?
+  phone                  String?
+  address                String?
+  isEmailVerified        Boolean                  @default(false)
   emailVerificationToken String?
-  passwordResetToken String?
-  passwordResetExpires DateTime?
-  createdAt    DateTime                 @default(now())
-  updatedAt    DateTime                 @updatedAt
-  profile      UserProfile?
-  expenses     Expense[]
-  incomes      Income[]
-  interactions EducationalInteraction[]
-  simulations  InvestmentSimulation[]
+  passwordResetToken     String?
+  passwordResetExpires   DateTime?
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+  profile                UserProfile?
+  expenses               Expense[]
+  incomes                Income[]
+  interactions           EducationalInteraction[]
+  simulations            InvestmentSimulation[]
 
   @@map("users")
 }

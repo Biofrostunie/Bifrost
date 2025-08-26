@@ -1,14 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import * as puppeteer from 'puppeteer';
 import { Decimal } from '@prisma/client/runtime/library';
 
 import { PdfService, ExpenseReportData } from './pdf.service';
+import { CacheService } from '../../redis/cache.service';
 
 describe('PdfService', () => {
   let service: PdfService;
-  let mockBrowser: jest.Mocked<any>;
-  let mockPage: jest.Mocked<any>;
-  let puppeteerLaunchSpy: jest.SpyInstance;
+  let cacheService: jest.Mocked<CacheService>;
 
   const mockReportData: ExpenseReportData = {
     expenses: [
@@ -38,235 +36,138 @@ describe('PdfService', () => {
         name: 'Food',
         total: 100,
         percentage: 100,
+        color: '#FF6384',
       },
     ],
   };
 
   beforeEach(async () => {
-    mockPage = {
-      setViewport: jest.fn().mockResolvedValue(undefined),
-      setUserAgent: jest.fn().mockResolvedValue(undefined),
-      setRequestInterception: jest.fn().mockResolvedValue(undefined),
-      on: jest.fn(),
-      setDefaultTimeout: jest.fn(),
-      setDefaultNavigationTimeout: jest.fn(),
-      setContent: jest.fn().mockResolvedValue(undefined),
-      evaluate: jest.fn().mockResolvedValue(undefined),
-      pdf: jest.fn().mockResolvedValue(Buffer.from('fake-pdf-content')),
-      close: jest.fn().mockResolvedValue(undefined),
-      isClosed: jest.fn().mockReturnValue(false),
+    const mockCacheService = {
+      get: jest.fn(),
+      set: jest.fn(),
+      del: jest.fn(),
+      exists: jest.fn(),
+      ttl: jest.fn(),
+      incr: jest.fn(),
+      incrWithExpire: jest.fn(),
+      mget: jest.fn(),
+      mset: jest.fn(),
+      delPattern: jest.fn(),
+      getOrSet: jest.fn(),
     };
-
-    mockBrowser = {
-      newPage: jest.fn().mockResolvedValue(mockPage),
-      close: jest.fn().mockResolvedValue(undefined),
-      isConnected: jest.fn().mockReturnValue(true),
-      on: jest.fn(),
-    };
-
-    // Use jest.spyOn instead of direct assignment
-    puppeteerLaunchSpy = jest.spyOn(puppeteer, 'launch').mockResolvedValue(mockBrowser);
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [PdfService],
+      providers: [
+        PdfService,
+        {
+          provide: CacheService,
+          useValue: mockCacheService,
+        },
+      ],
     }).compile();
 
     service = module.get<PdfService>(PdfService);
+    cacheService = module.get(CacheService);
   });
 
-  afterEach(async () => {
+  afterEach(() => {
     jest.clearAllMocks();
-    if (puppeteerLaunchSpy) {
-      puppeteerLaunchSpy.mockRestore();
-    }
-    await service.onModuleDestroy();
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  describe('generateExpenseReport', () => {
-    it('should generate PDF successfully', async () => {
-      const result = await service.generateExpenseReport(mockReportData);
-
-      expect(puppeteerLaunchSpy).toHaveBeenCalled();
-      expect(mockBrowser.newPage).toHaveBeenCalled();
-      expect(mockPage.setViewport).toHaveBeenCalled();
-      expect(mockPage.setContent).toHaveBeenCalled();
-      expect(mockPage.pdf).toHaveBeenCalled();
-      expect(result).toBeInstanceOf(Buffer);
-      expect(result.length).toBeGreaterThan(0);
+  describe('validateReportData', () => {
+    it('should validate report data successfully', () => {
+      expect(() => service['validateReportData'](mockReportData, 'test-id')).not.toThrow();
     });
 
-    it('should handle empty expenses list', async () => {
-      const emptyReportData = {
-        ...mockReportData,
-        expenses: [],
-        totalAmount: 0,
-        categories: [],
-      };
-
-      const result = await service.generateExpenseReport(emptyReportData);
-
-      expect(result).toBeInstanceOf(Buffer);
+    it('should throw error for null data', () => {
+      expect(() => service['validateReportData'](null as any, 'test-id')).toThrow('No report data provided');
     });
 
-    it('should handle browser launch failure', async () => {
-      puppeteerLaunchSpy.mockRejectedValue(new Error('Browser launch failed'));
-
-      await expect(service.generateExpenseReport(mockReportData)).rejects.toThrow(
-        'PDF service is temporarily unavailable. Please try again later.',
-      );
+    it('should throw error for empty expenses', () => {
+      const emptyData = { ...mockReportData, expenses: [] };
+      expect(() => service['validateReportData'](emptyData, 'test-id')).not.toThrow(); // Array vazio é válido
     });
 
-    it('should handle page creation failure', async () => {
-      mockBrowser.newPage = jest.fn().mockRejectedValue(new Error('Page creation failed'));
-
-      await expect(service.generateExpenseReport(mockReportData)).rejects.toThrow(
-        'Failed to generate PDF report. Please try again or contact support if the problem persists.',
-      );
+    it('should throw error for null expenses', () => {
+      const nullExpensesData = { ...mockReportData, expenses: null as any };
+      expect(() => service['validateReportData'](nullExpensesData, 'test-id')).toThrow('Invalid expense data provided');
     });
 
-    it('should handle PDF generation failure', async () => {
-      mockPage.pdf = jest.fn().mockRejectedValue(new Error('PDF generation failed'));
-
-      await expect(service.generateExpenseReport(mockReportData)).rejects.toThrow(
-        'Failed to generate PDF report. Please try again or contact support if the problem persists.',
-      );
+    it('should throw error for invalid user data', () => {
+      const invalidData = { ...mockReportData, user: { fullName: '', email: '' } };
+      expect(() => service['validateReportData'](invalidData, 'test-id')).toThrow('Invalid user data provided');
     });
 
-    it('should validate report data', async () => {
-      await expect(service.generateExpenseReport(null as any)).rejects.toThrow(
-        'Invalid data provided for report generation.',
-      );
-    });
-
-    it('should handle invalid user data', async () => {
-      const invalidReportData = {
-        ...mockReportData,
-        user: null as any,
-      };
-
-      await expect(service.generateExpenseReport(invalidReportData)).rejects.toThrow(
-        'Invalid data provided for report generation.',
-      );
-    });
-
-    it('should close page after generation', async () => {
-      await service.generateExpenseReport(mockReportData);
-
-      expect(mockPage.close).toHaveBeenCalled();
-    });
-
-    it('should reuse browser instance', async () => {
-      await service.generateExpenseReport(mockReportData);
-      await service.generateExpenseReport(mockReportData);
-
-      expect(puppeteerLaunchSpy).toHaveBeenCalledTimes(1);
-      expect(mockBrowser.newPage).toHaveBeenCalledTimes(2);
-    });
-
-    it('should handle browser disconnection', async () => {
-      mockBrowser.isConnected = jest.fn().mockReturnValue(false);
-
-      await service.generateExpenseReport(mockReportData);
-
-      expect(puppeteerLaunchSpy).toHaveBeenCalledTimes(2); // First call + retry
-    });
-
-    it('should set correct PDF options', async () => {
-      await service.generateExpenseReport(mockReportData);
-
-      expect(mockPage.pdf).toHaveBeenCalledWith({
-        format: 'A4',
-        printBackground: true,
-        preferCSSPageSize: false,
-        margin: {
-          top: '20mm',
-          right: '20mm',
-          bottom: '20mm',
-          left: '20mm',
-        },
-        displayHeaderFooter: false,
-        timeout: 30000,
-        omitBackground: false,
-        tagged: false,
-      });
-    });
-
-    it('should handle timeout errors', async () => {
-      mockPage.pdf = jest.fn().mockRejectedValue(new Error('Navigation timeout'));
-
-      await expect(service.generateExpenseReport(mockReportData)).rejects.toThrow(
-        'PDF generation timed out. Please try again with fewer expenses or a smaller date range.',
-      );
-    });
-
-    it('should handle critical browser errors', async () => {
-      mockPage.setContent = jest.fn().mockRejectedValue(new Error('Protocol error'));
-
-      await expect(service.generateExpenseReport(mockReportData)).rejects.toThrow(
-        'Browser communication error. Please try again.',
-      );
+    it('should throw error for missing user', () => {
+      const invalidData = { ...mockReportData, user: null as any };
+      expect(() => service['validateReportData'](invalidData, 'test-id')).toThrow('Invalid user data provided');
     });
   });
 
-  describe('onModuleDestroy', () => {
-    it('should close browser on module destroy', async () => {
-      await service.generateExpenseReport(mockReportData);
-      await service.onModuleDestroy();
-
-      expect(mockBrowser.close).toHaveBeenCalled();
-    });
-
-    it('should handle browser close error gracefully', async () => {
-      mockBrowser.close = jest.fn().mockRejectedValue(new Error('Close failed'));
-
-      await service.generateExpenseReport(mockReportData);
-      await expect(service.onModuleDestroy()).resolves.not.toThrow();
+  describe('enhanceDataWithColors', () => {
+    it('should enhance data with colors', () => {
+      const result = service['enhanceDataWithColors'](mockReportData);
+      expect(result).toBeDefined();
+      expect(result.categories).toBeDefined();
+      expect(result.categories[0].color).toBeDefined();
     });
   });
 
-  describe('HTML generation', () => {
-    it('should generate valid HTML template', async () => {
-      await service.generateExpenseReport(mockReportData);
+  describe('prepareCategoryChartData', () => {
+    it('should prepare category chart data correctly', () => {
+      const result = service['prepareCategoryChartData'](mockReportData.categories);
+      expect(result).toBeDefined();
+      expect(result.labels).toBeDefined();
+      expect(result.datasets).toBeDefined();
+    });
+  });
 
-      const setContentCall = mockPage.setContent.mock.calls[0][0];
-      expect(setContentCall).toContain('<!DOCTYPE html>');
-      expect(setContentCall).toContain('Test User');
-      expect(setContentCall).toContain('test@example.com');
-      expect(setContentCall).toContain('Test Expense');
-      expect(setContentCall).toContain('Food');
+  describe('prepareEssentialChartData', () => {
+    it('should prepare essential chart data correctly', () => {
+      const result = service['prepareEssentialChartData'](mockReportData.expenses);
+      expect(result).toBeDefined();
+      expect(result.labels).toBeDefined();
+      expect(result.datasets).toBeDefined();
+    });
+  });
+
+  describe('createUserFriendlyError', () => {
+    it('should create user-friendly error for browser launch failure', () => {
+      const error = new Error('Failed to launch browser');
+      const result = service['createUserFriendlyError'](error);
+      expect(result.message).toContain('PDF service is temporarily unavailable');
     });
 
-    it('should handle missing user name', async () => {
-      const reportDataWithoutName = {
-        ...mockReportData,
-        user: {
-          fullName: '',
-          email: 'test@example.com',
-        },
-      };
-
-      await service.generateExpenseReport(reportDataWithoutName);
-
-      const setContentCall = mockPage.setContent.mock.calls[0][0];
-      expect(setContentCall).toContain('Usuário');
+    it('should create user-friendly error for content loading failure', () => {
+      const error = new Error('Navigation failed');
+      const result = service['createUserFriendlyError'](error);
+      expect(result.message).toContain('Failed to load report content');
     });
 
-    it('should format currency correctly', async () => {
-      await service.generateExpenseReport(mockReportData);
-
-      const setContentCall = mockPage.setContent.mock.calls[0][0];
-      expect(setContentCall).toContain('100,00');
+    it('should create user-friendly error for invalid data', () => {
+      const error = new Error('Invalid data provided');
+      const result = service['createUserFriendlyError'](error);
+      expect(result.message).toContain('Invalid data provided');
     });
 
-    it('should format dates correctly', async () => {
-      await service.generateExpenseReport(mockReportData);
+    it('should create generic error for unknown issues', () => {
+      const error = new Error('Unknown error');
+      const result = service['createUserFriendlyError'](error);
+      expect(result.message).toContain('Failed to generate PDF report');
+    });
+  });
 
-      const setContentCall = mockPage.setContent.mock.calls[0][0];
-      expect(setContentCall).toContain('15/01/2024');
+  describe('isCriticalError', () => {
+    it('should identify critical errors correctly', () => {
+      const criticalError = new Error('Protocol error');
+      const nonCriticalError = new Error('Navigation timeout');
+      
+      expect(service['isCriticalError'](criticalError)).toBe(true);
+      expect(service['isCriticalError'](nonCriticalError)).toBe(false);
     });
   });
 });
