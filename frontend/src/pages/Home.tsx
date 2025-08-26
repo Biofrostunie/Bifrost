@@ -6,6 +6,7 @@ import UserProfile from "@/components/UserProfile";
 import DashboardCard from "@/components/DashboardCard";
 import InvestorProfileDialog from "@/components/InvestorProfileDialog";
 import { getCurrentTip } from "@/data/finacialTips"
+import { apiFetch } from "@/lib/api";
 // Sistema de dicas financeiras com rotação temporal
 
 const Home = () => {
@@ -32,29 +33,29 @@ const Home = () => {
     }
   }, []);
 
-  const handleProfileComplete = (profile: string) => {
+  const handleProfileComplete = async (profile: string) => {
     localStorage.setItem('investor-profile', profile);
     localStorage.setItem('investor-profile-dialog-seen', 'true');
     console.log('Perfil de investidor salvo:', profile);
 
-    // TODO: Integração com Supabase
-    // Enviar perfil para o backend
-    /*
+    const riskMap: Record<string, string> = {
+      Conservador: 'conservative',
+      Moderado: 'moderate',
+      Arrojado: 'aggressive',
+    };
+
+    const riskTolerance = riskMap[profile];
+
     try {
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .upsert({
-          user_id: user.id,
-          investor_profile: profile,
-          updated_at: new Date().toISOString()
-        });
-      
-      if (error) throw error;
-      console.log('Perfil salvo no backend:', data);
+      const token = localStorage.getItem('token');
+      await apiFetch('/users/profile', {
+        method: 'PUT',
+        token,
+        body: JSON.stringify({ riskTolerance }),
+      });
     } catch (error) {
       console.error('Erro ao salvar perfil:', error);
     }
-    */
   };
 
   const handleProfileDialogClose = () => {

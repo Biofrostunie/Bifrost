@@ -183,7 +183,10 @@ const PasswordRecovery = () => {
                   type="button"
                   variant="ghost"
                   className="w-full"
-                  onClick={() => setPasswordRecoveryStep("email")}
+                  onClick={() => {
+                    clearPasswordRecovery();
+                    navigate("/login");
+                  }}
                 >
                   <ArrowLeft className="mr-2 h-5 w-5" />
                   Voltar para o login
@@ -295,7 +298,10 @@ const PasswordRecovery = () => {
                   type="button"
                   variant="ghost"
                   className="w-full"
-                  onClick={() => setPasswordRecoveryStep("email")}
+                  onClick={() => {
+                    clearPasswordRecovery();
+                    navigate("/login");
+                  }}
                 >
                   <ArrowLeft className="mr-2 h-5 w-5" />
                   Voltar para o login

@@ -23,8 +23,10 @@ export class ExpensesService {
 
   async createExpense(userId: string, createExpenseDto: CreateExpenseDto) {
     this.logger.log(`Creating expense for user: ${userId}`);
+    const { essential = false, ...rest } = createExpenseDto;
     return this.expensesRepository.create({
-      ...createExpenseDto,
+      ...rest,
+      essential,
       userId,
     });
   }
