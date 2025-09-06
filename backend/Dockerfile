@@ -29,7 +29,7 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
 COPY package*.json ./
 
 # Install ALL dependencies (including devDependencies for build)
-RUN npm ci && npm cache clean --force
+RUN npm install && npm cache clean --force
 
 # Copy Prisma schema
 COPY prisma ./prisma/
@@ -43,8 +43,11 @@ COPY . .
 # Build the application
 RUN npm run build
 
+# Compile the seed file
+RUN npx tsc prisma/seed.ts --outDir dist/prisma --target es2020 --module commonjs --esModuleInterop --skipLibCheck
+
 # Verify build output
-RUN ls -la dist/ && test -f dist/main.js
+RUN ls -la dist/ && test -f dist/main.js && test -f dist/prisma/seed.js
 
 # Production stage
 FROM node:22-alpine AS production
@@ -83,7 +86,7 @@ WORKDIR /app
 COPY --from=builder --chown=nestjs:nodejs /app/package*.json ./
 
 # Install only production dependencies
-RUN npm ci --only=production && npm cache clean --force
+RUN npm install --only=production && npm cache clean --force
 
 # Copy built application from builder stage
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist

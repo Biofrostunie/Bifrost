@@ -1,0 +1,7 @@
+-- Seed data for financial_concepts table
+INSERT INTO financial_concepts (id, title, description, category, "difficultyLevel", tags, "createdAt") VALUES
+('11111111-1111-1111-1111-111111111111', 'Compound Interest', 'Compound interest is the addition of interest to the principal sum of a loan or deposit, or in other words, interest on interest.', 'investing', 'beginner', ARRAY['interest', 'investing', 'basics'], CURRENT_TIMESTAMP),
+('22222222-2222-2222-2222-222222222222', 'Emergency Fund', 'An emergency fund is a financial safety net for future mishaps and/or unexpected expenses.', 'saving', 'beginner', ARRAY['saving', 'emergency', 'basics'], CURRENT_TIMESTAMP),
+('33333333-3333-3333-3333-333333333333', 'Stock Market Basics', 'The stock market is where buyers and sellers come together to trade shares in eligible companies.', 'investing', 'intermediate', ARRAY['stocks', 'investing', 'market'], CURRENT_TIMESTAMP),
+('44444444-4444-4444-4444-444444444444', 'Budgeting 101', 'Budgeting is the process of creating a plan to spend your money.', 'budgeting', 'beginner', ARRAY['budget', 'planning', 'basics'], CURRENT_TIMESTAMP),
+('55555555-5555-5555-5555-555555555555', 'Retirement Planning', 'Retirement planning is the process of determining retirement income goals and the actions necessary to achieve those goals.', 'planning', 'advanced', ARRAY['retirement', 'planning', 'future'], CURRENT_TIMESTAMP);

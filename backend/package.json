@@ -25,6 +25,7 @@
     "prisma:studio": "prisma studio",
     "prisma:deploy": "prisma migrate deploy",
     "prisma:reset": "prisma migrate reset",
+    "prisma:seed": "ts-node prisma/seed.ts",
     "docker:build": "docker build -t financial-education-backend .",
     "docker:run": "docker run -p 3000:3000 financial-education-backend",
     "docker:compose": "docker-compose up -d",
@@ -60,6 +61,7 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "swagger-ui-express": "^5.0.1",
+    "uuid": "^9.0.1",
     "zod": "^3.23.8"
   },
   "jest": {
@@ -76,6 +78,9 @@
       "^.+\\.(t|j)s$": "ts-jest"
     }
   },
+  "prisma": {
+    "seed": "node dist/prisma/seed.js"
+  },
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
@@ -90,6 +95,7 @@
     "@types/passport-local": "^1.0.38",
     "@types/puppeteer": "^7.0.4",
     "@types/supertest": "^6.0.2",
+    "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^9.0.0",

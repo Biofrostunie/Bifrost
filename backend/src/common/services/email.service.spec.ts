@@ -61,7 +61,7 @@ describe('EmailService', () => {
         SMTP_PASS: 'test-password',
         EMAIL_FROM: 'noreply@test.com',
         EMAIL_FROM_NAME: 'Test Platform',
-        FRONTEND_URL: 'http://localhost:8080',
+        FRONTEND_URL: 'http://localhost:80',
       };
       return config[key as keyof typeof config];
     });

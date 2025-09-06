@@ -5,6 +5,7 @@ export interface User {
     email: string;
     phone?: string;
     memberSince: string;
+    riskTolerance?: string;
   }
   
   export interface AuthState {

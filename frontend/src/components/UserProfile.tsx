@@ -58,17 +58,17 @@ const UserProfile = () => {
       <div className="flex items-center space-x-4">
         <Avatar className="h-16 w-16 border-2 border-finance-blue/30">
           <AvatarImage src="" alt="Usuário" />
-          <AvatarFallback className="bg-finance-blue/20 text-finance-blue">
-            <User className="h-8 w-8" />
+          <AvatarFallback className="bg-finance-blue/20 text-finance-blue font-semibold text-lg">
+            {user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : <User className="h-8 w-8" />}
           </AvatarFallback>
         </Avatar>
 
         <div className="flex-1">
-          <h3 className="font-bold text-lg mb-1 dark:text-white">{user?.name || "João Silva"}</h3>
+          <h3 className="font-bold text-lg mb-1 dark:text-white">{user?.name || "Carregando..."}</h3>
 
           <div className="flex items-center text-finance-gray dark:text-gray-300 text-sm mb-1">
             <Mail className="h-4 w-4 mr-1" />
-            {user?.email || "joao.silva@email.com"}
+            {user?.email || "Carregando..."}
           </div>
 
           <div className="flex items-center text-finance-gray dark:text-gray-300 text-sm mb-1">
@@ -115,12 +115,11 @@ const UserProfile = () => {
 
           <div className="flex items-center text-finance-gray dark:text-gray-300 text-sm mb-1">
             <Receipt className="h-4 w-4 mr-1" />
-            {"Perfil Arrojado"}
+            {user?.riskTolerance || "Perfil não definido"}
           </div>
 
-
           <p className="text-sm text-finance-gray dark:text-gray-300">
-            Membro desde {user?.memberSince || "Janeiro 2024"}
+            Membro desde {user?.memberSince || "Carregando..."}
           </p>
         </div>
       </div>

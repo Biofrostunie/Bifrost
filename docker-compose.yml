@@ -13,8 +13,8 @@ services:
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init-scripts:/docker-entrypoint-initdb.d
-      - ./prisma/migrations:/docker-entrypoint-initdb.d/migrations
+      - ./backend/init-scripts:/docker-entrypoint-initdb.d
+      - ./backend/prisma/migrations:/docker-entrypoint-initdb.d/migrations
     ports:
       - "5432:5432"
     networks:
@@ -63,7 +63,7 @@ services:
   # Backend NestJS Application
   backend:
     build:
-      context: .
+      context: ./backend
       dockerfile: Dockerfile
       target: production
       args:
@@ -73,7 +73,6 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      # Aqui o hostname do banco é 'postgres' (nome do container)
       DATABASE_URL: postgresql://postgres:postgres123@postgres:5432/financial_education_db
       JWT_SECRET: your-super-secret-jwt-key-change-in-production-2024-bifrost
       LOG_LEVEL: info
@@ -84,7 +83,7 @@ services:
       SMTP_PASS: qfchctnvfmyulonn
       EMAIL_FROM: noreplybifrost@gmail.com
       EMAIL_FROM_NAME: Bifröst Education Platform
-      # Redis também usa o nome do container no Docker
+      FRONTEND_URL: http://localhost:80
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: senha-forte-confia
@@ -97,13 +96,13 @@ services:
       redis:
         condition: service_healthy
     command: >-
-      sh -c "npx prisma migrate deploy && chmod +x /app/init-scripts/run-seeds.sh && /app/init-scripts/run-seeds.sh && node dist/main.js"
+      sh -c "npx prisma migrate deploy && npx prisma db seed && node dist/main.js"
     networks:
       - financial_network
     volumes:
       - app_uploads:/app/uploads
       - app_logs:/app/logs
-      - ./init-scripts:/app/init-scripts
+      - ./backend/init-scripts:/app/init-scripts
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
       interval: 30s
@@ -118,6 +117,36 @@ services:
         reservations:
           memory: 512M
           cpus: '0.5'
+
+  # Frontend React Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:3000/api/v1
+    container_name: financial_education_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - financial_network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+          cpus: '0.25'
 
 volumes:
   postgres_data:
@@ -134,4 +163,4 @@ networks:
     driver: bridge
     ipam:
       config:
-        - subnet: 172.20.0.0/16
+        - subnet: 172.21.0.0/16

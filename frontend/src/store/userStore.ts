@@ -42,13 +42,34 @@ export const useUserStore = create<UserStore>((set, get) => ({
       const data = await apiFetch('/users/profile', { token });
       const userData = data.data;
 
+      // Format the member since date from createdAt
+      const formatMemberSince = (createdAt: string) => {
+        const date = new Date(createdAt);
+        const options: Intl.DateTimeFormatOptions = { 
+          year: 'numeric', 
+          month: 'long' 
+        };
+        return date.toLocaleDateString('pt-BR', options);
+      };
+
+      // Format risk tolerance for display
+      const formatRiskTolerance = (riskTolerance: string) => {
+        const riskMap: { [key: string]: string } = {
+          'conservative': 'Perfil Conservador',
+          'moderate': 'Perfil Moderado', 
+          'aggressive': 'Perfil Arrojado'
+        };
+        return riskMap[riskTolerance] || 'Perfil não definido';
+      };
+
       set({
         user: {
           id: userData.id,
           name: userData.fullName,
           email: userData.email,
           phone: userData.phone,
-          memberSince: userData.memberSince ?? ''
+          memberSince: userData.createdAt ? formatMemberSince(userData.createdAt) : 'Data não disponível',
+          riskTolerance: userData.profile?.riskTolerance ? formatRiskTolerance(userData.profile.riskTolerance) : 'Perfil não definido'
         },
         loading: false
       });

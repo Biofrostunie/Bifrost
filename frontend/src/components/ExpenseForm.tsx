@@ -20,7 +20,7 @@ export interface Expense {
 }
 
 interface ExpenseFormProps {
-  onAddExpense: (expense: Expense) => void;
+  onAddExpense: (expense: Omit<Expense, 'id'>) => void;
   categories?: Array<{ value: string; label: string }>;
 }
 
@@ -56,8 +56,7 @@ const ExpenseForm = ({ onAddExpense, categories: customCategories }: ExpenseForm
     const localDate = new Date(date + 'T12:00:00'); // Adiciona horário do meio-dia para evitar problemas de fuso
     const formattedDate = localDate.toISOString().split('T')[0]; // Mantém apenas a parte da data
 
-    const newExpense: Expense = {
-      id: Date.now().toString(),
+    const newExpense: Omit<Expense, 'id'> = {
       description,
       amount: parseFloat(amount),
       category,

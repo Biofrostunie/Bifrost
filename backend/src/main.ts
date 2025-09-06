@@ -19,12 +19,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   app.enableCors({
-    origin: [
-      'http://localhost:8080',
-      'http://localhost:3001',
-      'http://localhost:3000',
-      configService.get('FRONTEND_URL', 'http://localhost:8080'),
-    ],
+    origin: true, // Allow all origins
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: [
       'Origin',
@@ -93,7 +88,7 @@ async function bootstrap() {
       timestamp: new Date().toISOString(),
       message: 'Bifröst Education Platform API is running',
       version: '1.0.0',
-      nodeVersion: process.version,
+      nodeVersion: require('process').version,
       environment: configService.get('NODE_ENV'),
       services: {
         database: 'connected',
@@ -127,7 +122,7 @@ async function bootstrap() {
     .setVersion('1.0.0')
     .setContact(
       'Bifröst Team',
-      'https://github.com/bifrost-platform',
+      'https://github.com/Biofrostunie/Bifrost',
       'noreplybifrost@gmail.com'
     )
     .setLicense('MIT', 'https://opensource.org/licenses/MIT')
