@@ -1,0 +1,1 @@
+UPDATE users SET "isEmailVerified" = true WHERE email = 'matheus.cavalcante@santacasa.org';

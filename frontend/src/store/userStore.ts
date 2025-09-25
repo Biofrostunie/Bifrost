@@ -1,6 +1,7 @@
 
 import { create } from 'zustand';
 import { User } from './types';
+import { apiFetch } from '@/lib/api';
 
 interface UserStore {
   // Estado do store
@@ -37,25 +38,44 @@ export const useUserStore = create<UserStore>((set, get) => ({
   getUser: async () => {
     set({ loading: true, error: null });
     try {
-      // TODO: Substituir por chamada real da API
-      // const response = await fetch('/api/user/me', {
-      //   method: 'GET',
-      //   headers: { 'Authorization': `Bearer ${token}` }
-      // });
-      
-      // Simulação da resposta da API
-      const userData = {
-        id: '1',
-        name: localStorage.getItem('userName') || 'João Silva',
-        email: localStorage.getItem('userEmail') || 'joao.silva@email.com',
-        phone: localStorage.getItem('userPhone') || '',
-        memberSince: 'Janeiro 2024'
+      const token = localStorage.getItem('token');
+      const data = await apiFetch('/users/profile', { token });
+      const userData = data.data;
+
+      // Format the member since date from createdAt
+      const formatMemberSince = (createdAt: string) => {
+        const date = new Date(createdAt);
+        const options: Intl.DateTimeFormatOptions = { 
+          year: 'numeric', 
+          month: 'long' 
+        };
+        return date.toLocaleDateString('pt-BR', options);
       };
-      
-      set({ user: userData, loading: false });
+
+      // Format risk tolerance for display
+      const formatRiskTolerance = (riskTolerance: string) => {
+        const riskMap: { [key: string]: string } = {
+          'conservative': 'Perfil Conservador',
+          'moderate': 'Perfil Moderado', 
+          'aggressive': 'Perfil Arrojado'
+        };
+        return riskMap[riskTolerance] || 'Perfil não definido';
+      };
+
+      set({
+        user: {
+          id: userData.id,
+          name: userData.fullName,
+          email: userData.email,
+          phone: userData.phone,
+          memberSince: userData.createdAt ? formatMemberSince(userData.createdAt) : 'Data não disponível',
+          riskTolerance: userData.profile?.riskTolerance ? formatRiskTolerance(userData.profile.riskTolerance) : 'Perfil não definido'
+        },
+        loading: false
+      });
     } catch (error) {
-      // Tratamento de erro da API
-      set({ error: 'Erro ao carregar dados do usuário', loading: false });
+      set({ error: error instanceof Error ? error.message : 'Erro ao carregar dados do usuário', loading: false });
+      throw error;
     }
   },
 
@@ -68,29 +88,23 @@ export const useUserStore = create<UserStore>((set, get) => ({
       if (!currentUser) {
         throw new Error('Usuário não encontrado');
       }
+      const token = localStorage.getItem('token');
+      const data = await apiFetch('/users', {
+        method: 'PUT',
+        token,
+        body: JSON.stringify(userData)
+      });
 
-      // TODO: Substituir por chamada real da API
-      // const response = await fetch(`/api/user/${currentUser.id}`, {
-      //   method: 'PUT',
-      //   headers: { 
-      //     'Content-Type': 'application/json',
-      //     'Authorization': `Bearer ${token}` 
-      //   },
-      //   body: JSON.stringify(userData)
-      // });
-      
-      // Simulação da atualização
-      const updatedUser = { ...currentUser, ...userData };
-      
-      // Persistir no localStorage (temporário até implementar API)
-      if (userData.name) localStorage.setItem('userName', userData.name);
-      if (userData.email) localStorage.setItem('userEmail', userData.email);
-      if (userData.phone) localStorage.setItem('userPhone', userData.phone);
-      
-      set({ user: updatedUser, loading: false });
+      const updatedUser = data.data;
+
+      if (updatedUser.fullName) localStorage.setItem('userName', updatedUser.fullName);
+      if (updatedUser.email) localStorage.setItem('userEmail', updatedUser.email);
+      if (updatedUser.phone) localStorage.setItem('userPhone', updatedUser.phone);
+
+      set({ user: { ...currentUser, ...updatedUser }, loading: false });
     } catch (error) {
-      // Tratamento de erro da API
-      set({ error: 'Erro ao atualizar dados do usuário', loading: false });
+      set({ error: error instanceof Error ? error.message : 'Erro ao atualizar dados do usuário', loading: false });
+      throw error;
     }
   },
 

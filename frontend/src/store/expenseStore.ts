@@ -1,6 +1,7 @@
 
 import { create } from 'zustand';
 import { Expense } from './types';
+import { apiFetch } from '@/lib/api';
 
 interface ExpenseStore {
   // Estado do store
@@ -42,24 +43,12 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
   getExpenses: async () => {
     set({ loading: true, error: null });
     try {
-      // TODO: Substituir por chamada real da API
-      // const response = await fetch('/api/expenses', {
-      //   method: 'GET',
-      //   headers: { 
-      //     'Authorization': `Bearer ${token}`,
-      //     'Content-Type': 'application/json'
-      //   }
-      // });
-      // const expenses = await response.json();
-      
-      // Simulação da busca no localStorage (temporário)
-      const savedExpenses = localStorage.getItem('expenses');
-      const expenses = savedExpenses ? JSON.parse(savedExpenses) : [];
-      
-      set({ expenses, loading: false });
+      const token = localStorage.getItem('token');
+      const data = await apiFetch('/expenses', { token });
+      set({ expenses: data.data ?? [], loading: false });
     } catch (error) {
-      // Tratamento de erro da API
-      set({ error: 'Erro ao carregar despesas', loading: false });
+      set({ error: error instanceof Error ? error.message : 'Erro ao carregar despesas', loading: false });
+      throw error;
     }
   },
 
@@ -68,33 +57,18 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
   addExpense: async (expenseData: Omit<Expense, 'id'>) => {
     set({ loading: true, error: null });
     try {
-      // TODO: Substituir por chamada real da API
-      // const response = await fetch('/api/expenses', {
-      //   method: 'POST',
-      //   headers: { 
-      //     'Authorization': `Bearer ${token}`,
-      //     'Content-Type': 'application/json'
-      //   },
-      //   body: JSON.stringify(expenseData)
-      // });
-      // const newExpense = await response.json();
-      
-      // Simulação da criação
-      const newExpense: Expense = {
-        ...expenseData,
-        id: crypto.randomUUID(), // Em produção, o ID viria da API
-      };
-      
-      const currentExpenses = get().expenses;
-      const updatedExpenses = [...currentExpenses, newExpense];
-      
-      // Persistir no localStorage (temporário até implementar API)
-      localStorage.setItem('expenses', JSON.stringify(updatedExpenses));
-      
-      set({ expenses: updatedExpenses, loading: false });
+      const token = localStorage.getItem('token');
+      const data = await apiFetch('/expenses', {
+        method: 'POST',
+        token,
+        body: JSON.stringify(expenseData)
+      });
+
+      const newExpense: Expense = data.data;
+      set({ expenses: [...get().expenses, newExpense], loading: false });
     } catch (error) {
-      // Tratamento de erro da API
-      set({ error: 'Erro ao adicionar despesa', loading: false });
+      set({ error: error instanceof Error ? error.message : 'Erro ao adicionar despesa', loading: false });
+      throw error;
     }
   },
 
@@ -103,30 +77,23 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
   updateExpense: async (id: string, expenseData: Partial<Expense>) => {
     set({ loading: true, error: null });
     try {
-      // TODO: Substituir por chamada real da API
-      // const response = await fetch(`/api/expenses/${id}`, {
-      //   method: 'PUT',
-      //   headers: { 
-      //     'Authorization': `Bearer ${token}`,
-      //     'Content-Type': 'application/json'
-      //   },
-      //   body: JSON.stringify(expenseData)
-      // });
-      // const updatedExpense = await response.json();
-      
-      // Simulação da atualização
+      const token = localStorage.getItem('token');
+      const data = await apiFetch(`/expenses/${id}`, {
+        method: 'PUT',
+        token,
+        body: JSON.stringify(expenseData)
+      });
+
+      const updatedExpense: Expense = data.data;
       const currentExpenses = get().expenses;
       const updatedExpenses = currentExpenses.map(expense =>
-        expense.id === id ? { ...expense, ...expenseData } : expense
+        expense.id === id ? updatedExpense : expense
       );
-      
-      // Persistir no localStorage (temporário até implementar API)
-      localStorage.setItem('expenses', JSON.stringify(updatedExpenses));
-      
+
       set({ expenses: updatedExpenses, loading: false });
     } catch (error) {
-      // Tratamento de erro da API
-      set({ error: 'Erro ao atualizar despesa', loading: false });
+      set({ error: error instanceof Error ? error.message : 'Erro ao atualizar despesa', loading: false });
+      throw error;
     }
   },
 
@@ -135,26 +102,16 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
   removeExpense: async (id: string) => {
     set({ loading: true, error: null });
     try {
-      // TODO: Substituir por chamada real da API
-      // const response = await fetch(`/api/expenses/${id}`, {
-      //   method: 'DELETE',
-      //   headers: { 
-      //     'Authorization': `Bearer ${token}`,
-      //     'Content-Type': 'application/json'
-      //   }
-      // });
-      
-      // Simulação da remoção
+      const token = localStorage.getItem('token');
+      await apiFetch(`/expenses/${id}`, { method: 'DELETE', token });
+
       const currentExpenses = get().expenses;
       const updatedExpenses = currentExpenses.filter(expense => expense.id !== id);
-      
-      // Persistir no localStorage (temporário até implementar API)
-      localStorage.setItem('expenses', JSON.stringify(updatedExpenses));
-      
+
       set({ expenses: updatedExpenses, loading: false });
     } catch (error) {
-      // Tratamento de erro da API
-      set({ error: 'Erro ao remover despesa', loading: false });
+      set({ error: error instanceof Error ? error.message : 'Erro ao remover despesa', loading: false });
+      throw error;
     }
   },
 
@@ -163,22 +120,12 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
   clearAllExpenses: async () => {
     set({ loading: true, error: null });
     try {
-      // TODO: Substituir por chamada real da API
-      // const response = await fetch('/api/expenses', {
-      //   method: 'DELETE',
-      //   headers: { 
-      //     'Authorization': `Bearer ${token}`,
-      //     'Content-Type': 'application/json'
-      //   }
-      // });
-      
-      // Simulação da limpeza
-      localStorage.removeItem('expenses');
-      
+      const token = localStorage.getItem('token');
+      await apiFetch('/expenses', { method: 'DELETE', token });
       set({ expenses: [], loading: false });
     } catch (error) {
-      // Tratamento de erro da API
-      set({ error: 'Erro ao limpar despesas', loading: false });
+      set({ error: error instanceof Error ? error.message : 'Erro ao limpar despesas', loading: false });
+      throw error;
     }
   },
 

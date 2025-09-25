@@ -1,0 +1,71 @@
+# ===========================================
+# BIFRÖST EDUCATION PLATFORM - GIT ATTRIBUTES
+# ===========================================
+
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# ===========================================
+# SOURCE CODE
+# ===========================================
+*.ts text eol=lf
+*.js text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# ===========================================
+# CONFIGURATION FILES
+# ===========================================
+*.env text eol=lf
+*.env.* text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+Dockerfile text eol=lf
+docker-compose*.yml text eol=lf
+
+# ===========================================
+# DOCUMENTATION
+# ===========================================
+*.md text eol=lf
+*.txt text eol=lf
+LICENSE text eol=lf
+
+# ===========================================
+# BINARY FILES
+# ===========================================
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.tar.gz binary
+
+# ===========================================
+# FONTS
+# ===========================================
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.eot binary
+
+# ===========================================
+# LINGUIST OVERRIDES
+# ===========================================
+# Mark generated files
+prisma/migrations/* linguist-generated=true
+dist/* linguist-generated=true
+coverage/* linguist-generated=true
+
+# Mark documentation
+*.md linguist-documentation=true
+docs/* linguist-documentation=true
+
+# Mark test files
+test/* linguist-detectable=false
+*.spec.ts linguist-detectable=false
+*.test.ts linguist-detectable=false

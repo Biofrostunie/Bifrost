@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { User, Mail, Phone, Edit3, Check, X } from "lucide-react";
+import { User, Mail, Phone, Edit3, Check, X, Receipt } from "lucide-react";
 import { useUserStore } from "@/store";
 import { toast } from "sonner";
 
@@ -58,19 +58,19 @@ const UserProfile = () => {
       <div className="flex items-center space-x-4">
         <Avatar className="h-16 w-16 border-2 border-finance-blue/30">
           <AvatarImage src="" alt="Usuário" />
-          <AvatarFallback className="bg-finance-blue/20 text-finance-blue">
-            <User className="h-8 w-8" />
+          <AvatarFallback className="bg-finance-blue/20 text-finance-blue font-semibold text-lg">
+            {user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : <User className="h-8 w-8" />}
           </AvatarFallback>
         </Avatar>
-        
+
         <div className="flex-1">
-          <h3 className="font-bold text-lg mb-1 dark:text-white">{user?.name || "João Silva"}</h3>
-          
+          <h3 className="font-bold text-lg mb-1 dark:text-white">{user?.name || "Carregando..."}</h3>
+
           <div className="flex items-center text-finance-gray dark:text-gray-300 text-sm mb-1">
             <Mail className="h-4 w-4 mr-1" />
-            {user?.email || "joao.silva@email.com"}
+            {user?.email || "Carregando..."}
           </div>
-          
+
           <div className="flex items-center text-finance-gray dark:text-gray-300 text-sm mb-1">
             <Phone className="h-4 w-4 mr-1" />
             {isEditingPhone ? (
@@ -81,17 +81,17 @@ const UserProfile = () => {
                   placeholder="(11) 99999-9999"
                   className="h-6 text-sm w-40"
                 />
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
+                <Button
+                  size="sm"
+                  variant="ghost"
                   className="h-6 w-6 p-0"
                   onClick={handleSavePhone}
                 >
                   <Check className="h-3 w-3 text-green-600" />
                 </Button>
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
+                <Button
+                  size="sm"
+                  variant="ghost"
                   className="h-6 w-6 p-0"
                   onClick={handleCancelEdit}
                 >
@@ -101,9 +101,9 @@ const UserProfile = () => {
             ) : (
               <div className="flex items-center gap-2">
                 <span>{user?.phone || "Adicionar telefone"}</span>
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
+                <Button
+                  size="sm"
+                  variant="ghost"
                   className="h-6 w-6 p-0"
                   onClick={() => setIsEditingPhone(true)}
                 >
@@ -112,9 +112,14 @@ const UserProfile = () => {
               </div>
             )}
           </div>
-          
+
+          <div className="flex items-center text-finance-gray dark:text-gray-300 text-sm mb-1">
+            <Receipt className="h-4 w-4 mr-1" />
+            {user?.riskTolerance || "Perfil não definido"}
+          </div>
+
           <p className="text-sm text-finance-gray dark:text-gray-300">
-            Membro desde {user?.memberSince || "Janeiro 2024"}
+            Membro desde {user?.memberSince || "Carregando..."}
           </p>
         </div>
       </div>
