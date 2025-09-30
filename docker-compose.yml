@@ -77,8 +77,8 @@ services:
       JWT_SECRET: your-super-secret-jwt-key-change-in-production-2024-bifrost
       LOG_LEVEL: info
       SMTP_HOST: smtp.gmail.com
-      SMTP_PORT: 465
-      SMTP_SECURE: 'true'
+      SMTP_PORT: "465"
+      SMTP_SECURE: "true"
       SMTP_USER: noreplybifrost@gmail.com
       SMTP_PASS: qfchctnvfmyulonn
       EMAIL_FROM: noreplybifrost@gmail.com
