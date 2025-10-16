@@ -1,0 +1,22 @@
+name: Continuos Integration
+
+on: [pull_request, push]
+
+jobs:
+  continuos-integration:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Repository Checkout
+      - uses: actions/checkout@v3
+
+      - name: Verify Docker Version
+        run: |
+          docker --version
+          docker compose version
+
+      - name: Run Backend (docker-compose)
+      - run: docker-compose up
+
+      - name: Run Tests
+      - run: npm run test
