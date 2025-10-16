@@ -1,22 +1,32 @@
-name: Continuos Integration
+name: Continuous Integration
 
-on: [pull_request, push]
+on:
+  push:
+    branches: [ main, development ]
+  pull_request:
+    branches: [ main, development ]
 
 jobs:
-  continuos-integration:
+  ci:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Repository Checkout
-      - uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
       - name: Verify Docker Version
         run: |
           docker --version
           docker compose version
 
-      - name: Run Backend (docker-compose)
-      - run: docker-compose up
+      - name: Run Backend with Docker Compose
+        run: |
+          docker-compose up -d
+          sleep 10
 
       - name: Run Tests
-      - run: npm run test
+        run: npm run test
+
+      - name: Stop and Remove Containers
+        if: always()
+        run: docker-compose down
