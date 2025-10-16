@@ -22,7 +22,7 @@ jobs:
       - name: Run Backend with Docker Compose
         working-directory: ./backend
         run: |
-          docker-compose up -d
+          docker compose up -d
           sleep 10
 
       - name: Run Tests
@@ -32,4 +32,4 @@ jobs:
       - name: Stop and Remove Containers
         if: always()
         working-directory: ./backend
-        run: docker-compose down
+        run: docker compose down
