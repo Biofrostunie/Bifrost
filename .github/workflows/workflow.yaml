@@ -21,13 +21,16 @@ jobs:
           docker compose version
 
       - name: Run Backend with Docker Compose
+        working-directory: ./backend
         run: |
           docker-compose up -d
           sleep 10
 
       - name: Run Tests
+        working-directory: ./backend
         run: npm run test
 
       - name: Stop and Remove Containers
         if: always()
+        working-directory: ./backend
         run: docker-compose down
