@@ -13,6 +13,7 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
+        run: cd backend
 
       - name: Verify Docker Version
         run: |
