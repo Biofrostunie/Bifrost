@@ -1,88 +1,114 @@
 
-# Bifrost - Sistema de Educação e Gestão Financeira
+# 🌈 Bifrost - Sistema de Educação e Gestão Financeira
 
-##Alunos
-   - Daniel Debastiani - 2210875
-   - Luis Felipe Borges Rosa - 2211829
-   - Lucas Oliveira Santiago - 2210370
-   - Matheus de Paula Costa Cavalcante - 2210950
-     
-## Visão Geral
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+## 👨‍🎓 Alunos
+- Daniel Debastiani - 2210875
+- Luis Felipe Borges Rosa - 2211829
+- Lucas Oliveira Santiago - 2210370
+- Matheus de Paula Costa Cavalcante - 2210950
+
+## 📋 Índice
+- [Visão Geral](#-visão-geral)
+- [Funcionalidades](#-funcionalidades)
+- [Arquitetura](#-arquitetura)
+- [Tecnologias](#-tecnologias)
+- [Estrutura do Projeto](#-estrutura-do-projeto)
+- [Instalação e Execução](#-instalação-e-execução)
+- [Desenvolvimento](#-desenvolvimento)
+- [Documentação da API](#-documentação-da-api)
+- [Testes](#-testes)
+- [Contribuição](#-contribuição)
+
+## 🔍 Visão Geral
 
 Bifrost é uma aplicação web moderna desenvolvida para educação financeira e gestão pessoal de finanças. O sistema permite que usuários gerenciem suas finanças pessoais, aprendam conceitos financeiros importantes e realizem simulações de investimentos.
 
-## Requisitos Funcionais
+A plataforma é composta por um frontend moderno em React com TypeScript e um backend robusto em NestJS, oferecendo uma experiência completa para controle financeiro pessoal e educação financeira.
 
-1. **Autenticação e Gerenciamento de Usuários**
-   - Cadastro de novos usuários
-   - Login de usuários
-   - Recuperação de senha
-   - Visualização e edição de perfil
+## 🚀 Funcionalidades
 
-2. **Gestão Financeira**
-   - Registro de receitas com categorias personalizáveis
-   - Registro de despesas com categorias personalizáveis
-   - Visualização de saldo atual
-   - Cálculo dinâmico de balanço financeiro
+### 🔐 Autenticação e Gerenciamento de Usuários
+- Cadastro de novos usuários com validação de e-mail
+- Login seguro com JWT
+- Recuperação de senha com código de 5 dígitos
+- Visualização e edição de perfil
+- Proteção de rotas com guards e rate limiting
 
-3. **Educação Financeira**
-   - Biblioteca de conceitos financeiros
-   - Filtro e busca de conteúdo educacional
-   - Visualização detalhada de conceitos financeiros
-   - Input personalizado de dados financeiros do usuário
+### 💰 Gestão Financeira
+- Registro de receitas com categorias personalizáveis
+- Registro de despesas com categorias personalizáveis
+- Visualização de saldo atual
+- Cálculo dinâmico de balanço financeiro
+- Relatórios em PDF personalizados
+- Filtros avançados por data, categoria e tipo
 
-4. **Simulação de Investimentos**
-   - Cálculo de rendimentos baseados em diferentes parâmetros
-   - Visualização gráfica de projeções
-   - Comparação entre diferentes estratégias de investimento
+### 🎓 Educação Financeira
+- Biblioteca de conceitos financeiros categorizados
+- Filtro e busca de conteúdo educacional
+- Visualização detalhada de conceitos financeiros
+- Níveis de dificuldade para diferentes perfis de usuário
+- Dicas práticas para gestão financeira
 
-5. **Dashboard**
-   - Resumo visual da situação financeira atual
-   - Indicadores de saúde financeira
-   - Gráficos e métricas de desempenho
+### 📊 Simulação de Investimentos
+- Cálculo de rendimentos baseados em diferentes parâmetros
+- Visualização gráfica de projeções
+- Comparação entre diferentes estratégias de investimento
+- Taxas de investimento atualizadas (SELIC, IPCA, Poupança, CDI)
 
-## Requisitos Não Funcionais
+### 📈 Dashboard
+- Resumo visual da situação financeira atual
+- Indicadores de saúde financeira
+- Gráficos e métricas de desempenho
+- Exportação de dados
 
-1. **Performance**
-   - Tempo de resposta menor que 1 segundo para operações regulares
-   - Otimização para dispositivos móveis e desktop
+## 🏗 Arquitetura
 
-2. **Usabilidade**
-   - Interface responsiva para diferentes tamanhos de tela
-   - Design acessível e intuitivo
-   - Feedback visual para ações do usuário
-
-3. **Segurança**
-   - Autenticação segura de usuários
-   - Proteção de rotas para usuários não autenticados
-   - Validação de entradas para prevenção de injeções
-
-4. **Manutenibilidade**
-   - Código modular com componentes reutilizáveis
-   - Padrões de design consistentes
-   - Documentação de código
-
-5. **Escalabilidade**
-   - Arquitetura que permite crescimento do número de usuários
-   - Estrutura para adição de novos recursos
-
-## Tecnologias Utilizadas
-
-- **Frontend**
-  - Vite
-  - TypeScript
-  - React
-  - React Router DOM
-  - TanStack React Query
-  - shadcn-ui
-  - Tailwind CSS
-  - Lucide React (ícones)
-  - Recharts (visualização de dados)
-
-## Estrutura do Projeto
+O projeto Bifrost segue uma arquitetura moderna de aplicação web:
 
 ```
-bifrost/
+Bifrost/
+├── frontend/       # Aplicação React (Cliente)
+└── backend/        # API NestJS (Servidor)
+```
+
+### Fluxo de Dados
+1. **Frontend**: Interface de usuário React que consome a API
+2. **Backend**: API REST + tRPC que processa requisições e gerencia dados
+3. **Banco de Dados**: PostgreSQL para armazenamento persistente
+4. **Cache**: Redis para melhorar performance e gerenciar sessões
+
+## 💻 Tecnologias
+
+### Frontend
+- **Framework**: React com TypeScript
+- **Build Tool**: Vite
+- **Roteamento**: React Router DOM
+- **Gerenciamento de Estado**: TanStack React Query
+- **UI Components**: shadcn-ui
+- **Estilização**: Tailwind CSS
+- **Ícones**: Lucide React
+- **Gráficos**: Recharts
+- **Formulários**: React Hook Form + Zod
+
+### Backend
+- **Framework**: NestJS com TypeScript
+- **ORM**: Prisma
+- **Banco de Dados**: PostgreSQL
+- **Cache**: Redis
+- **API**: REST + tRPC
+- **Autenticação**: JWT
+- **Documentação**: Swagger/OpenAPI
+- **Containerização**: Docker + Docker Compose
+- **Geração de PDF**: Puppeteer
+- **Testes**: Jest
+
+## 📁 Estrutura do Projeto
+
+### Frontend
+```
+frontend/
 ├── src/                    # Código fonte da aplicação
 │   ├── components/         # Componentes reutilizáveis
 │   │   ├── ui/             # Componentes de UI básicos (shadcn)
@@ -97,111 +123,148 @@ bifrost/
 └── public/                 # Arquivos públicos estáticos
 ```
 
-## Componentes Principais
+### Backend
+```
+backend/
+├── src/                    # Código fonte da aplicação
+│   ├── auth/               # Módulo de autenticação
+│   ├── users/              # Módulo de usuários
+│   ├── expenses/           # Módulo de despesas
+│   ├── incomes/            # Módulo de receitas
+│   ├── financial-concepts/ # Módulo de conceitos financeiros
+│   ├── investment-rates/   # Módulo de taxas de investimento
+│   ├── investment-simulations/ # Módulo de simulações
+│   ├── common/             # Utilitários e helpers
+│   ├── prisma/             # Serviço e configuração do Prisma
+│   ├── redis/              # Serviço e configuração do Redis
+│   ├── trpc/               # Configuração do tRPC
+│   └── main.ts             # Ponto de entrada da aplicação
+├── prisma/                 # Schema e migrações do Prisma
+│   ├── migrations/         # Migrações do banco de dados
+│   └── schema.prisma       # Schema do banco de dados
+└── test/                   # Testes automatizados
+```
 
-### Componentes de Layout
-- **AppLayout**: Layout principal da aplicação com navegação desktop/mobile
-- **Header**: Cabeçalho com título da página e configurações
-- **DesktopNavigation**: Menu de navegação para desktop
-- **BottomNavigation**: Menu de navegação para dispositivos móveis
+## 🔧 Instalação e Execução
 
-### Componentes de Página
-- **Login**: Autenticação de usuários
-- **CreateAccount**: Registro de novos usuários
-- **PasswordRecovery**: Recuperação de senha
-- **Home**: Dashboard principal
-- **FinancialEducation**: Página de educação financeira
-- **ExpenseCalculator**: Calculadora de despesas
-- **InvestmentCalculator**: Simulador de investimentos
-- **KnowledgeBase**: Base de conhecimento financeiro
+### Pré-requisitos
+- Node.js (v18+)
+- Docker e Docker Compose
+- Git
 
-### Componentes de Finança
-- **FinancialSummary**: Resumo da situação financeira do usuário
-- **IncomeForm**: Formulário para adição de receitas
-- **IncomeList**: Lista de receitas cadastradas
-- **ExpenseForm**: Formulário para adição de despesas
-- **ExpenseList**: Lista de despesas cadastradas
-- **FinancialIndicator**: Indicadores visuais de métricas financeiras
-
-### Componentes de UI
-- Componentes baseados em shadcn-ui como Button, Card, Input, etc.
-- Componentes customizados para visualização de dados financeiros
-
-## Fluxos de Dados
-
-1. **Autenticação**:
-   - Usuário fornece credenciais -> Validação -> Armazenamento de token -> Redirecionamento para Home
-   
-2. **Gestão Financeira**:
-   - Usuário registra transação -> Atualização de estado -> Recálculo de saldo -> Atualização de UI
-
-3. **Educação Financeira**:
-   - Carregamento de conceitos -> Filtro/Busca -> Exibição de detalhes
-
-4. **Simulação de Investimentos**:
-   - Input de parâmetros -> Cálculos -> Geração de gráficos -> Exibição de resultados
-
-## Considerações Técnicas
-
-1. **Gerenciamento de Estado**:
-   - Estados locais com React useState
-   - Estados globais com contextos quando necessário
-   - Gerenciamento de cache e requisições com TanStack Query
-
-2. **Roteamento**:
-   - Gerenciamento de rotas com React Router DOM
-   - Proteção de rotas com componente ProtectedRoute
-
-3. **Estilização**:
-   - Uso extensivo de Tailwind CSS para estilos responsivos
-   - Componentes shadcn-ui para interfaces consistentes
-   - Tema com suporte a modo claro/escuro
-
-4. **Otimização**:
-   - Memoização de componentes com React.memo onde apropriado
-   - Lazy loading de rotas menos frequentes
-   - Uso de imagens otimizadas e carregamento eficiente
-
-5. **Validação**:
-   - Validação de formulários com React Hook Form
-   - Validação de esquemas com Zod
-
-## Instalação e Desenvolvimento
-
-Para iniciar o desenvolvimento do projeto frontend:
-
-```sh
-# Clonar o repositório
+### Instalação Rápida (com Docker)
+```bash
+# Clone o repositório
 git clone https://github.com/Biofrostunie/Bifrost
 cd Bifrost
 
-#Acessar o frontend
+# Inicie os containers
+docker-compose up -d
+```
 
+Acesse:
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:3000/api
+- Swagger: http://localhost:3000/api-docs
+
+### Instalação Manual
+
+#### Backend
+```bash
+cd backend
+
+# Instale as dependências
+npm install
+
+# Configure as variáveis de ambiente
+cp .env.example .env
+# Edite o arquivo .env com suas configurações
+
+# Execute as migrações do banco de dados
+npx prisma migrate dev
+
+# Inicie o servidor de desenvolvimento
+npm run start:dev
+```
+
+#### Frontend
+```bash
 cd frontend
 
-# Instalar dependências
-npm i
+# Instale as dependências
+npm install
 
-# Iniciar servidor de desenvolvimento
+# Inicie o servidor de desenvolvimento
 npm run dev
 ```
 
-## Build e Deploy
+## 🛠 Desenvolvimento
 
-Para construir a aplicação para produção:
+### Comandos Úteis - Backend
+```bash
+# Desenvolvimento
+npm run start:dev
 
-```sh
-# Gerar build de produção
+# Build de produção
 npm run build
 
-# Visualizar build localmente
+# Testes unitários
+npm run test
+
+# Testes e2e
+npm run test:e2e
+
+# Testes de carga
+npm run test:load
+
+# Gerar migrações do Prisma
+npx prisma migrate dev --name nome_da_migracao
+
+# Gerar cliente Prisma
+npx prisma generate
+```
+
+### Comandos Úteis - Frontend
+```bash
+# Desenvolvimento
+npm run dev
+
+# Build de produção
+npm run build
+
+# Preview do build
 npm run preview
 ```
 
-## Contribuição
+## 📚 Documentação da API
+
+A documentação da API está disponível através do Swagger UI:
+- Local: http://localhost:3000/api-docs
+- Produção: https://api.bifrost.com/api-docs
+
+## 🧪 Testes
+
+### Backend
+O backend inclui testes unitários, de integração e de carga:
+```bash
+# Testes unitários
+npm run test
+
+# Testes e2e
+npm run test:e2e
+
+# Testes de carga
+npm run test:load
+```
+
+## 🤝 Contribuição
 
 1. Faça um fork do projeto
 2. Crie uma branch para sua feature (`git checkout -b feature/nova-feature`)
 3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
 4. Push para a branch (`git push origin feature/nova-feature`)
 5. Abra um Pull Request
+
+---
+
+Desenvolvido como Trabalho de Conclusão de Curso (TCC) na PUCRS.
