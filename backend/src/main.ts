@@ -120,6 +120,22 @@ async function bootstrap() {
     });
   });
 
+  // Base API endpoint for versioned root (useful for health/UI checks)
+  app.getHttpAdapter().get('/api/v1', async (req: Request, res: Response) => {
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      message: 'Bifröst API base. Use specific endpoints like /api/v1/auth/register',
+      availableEndpoints: [
+        '/api/v1/auth/register',
+        '/api/v1/auth/login',
+        '/api/v1/users/profile',
+        '/api/v1/expenses',
+        '/api/health'
+      ],
+    });
+  });
+
   // Swagger documentation
   const config = new DocumentBuilder()
     .setTitle('Bifröst Education Platform API')
