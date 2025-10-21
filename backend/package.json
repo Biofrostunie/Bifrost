@@ -69,7 +69,7 @@
     "zod": "^3.23.8"
   },
   "prisma": {
-    "seed": "node dist/prisma/seed.ts"
+    "seed": "node dist/prisma/seed.js"
   },
   "devDependencies": {
     "@nestjs/cli": "^11.0.0",

@@ -86,7 +86,7 @@ export class ExpensesRepository {
       
       // Log first few expenses for debugging
       if (expenses.length > 0) {
-        this.logger.log('Sample expenses:', expenses.slice(0, 3).map(e => ({
+        this.logger.log('Sample expenses:', expenses.slice(0, 3).map((e: any) => ({
           id: e.id,
           description: e.description,
           amount: e.amount.toString(),
@@ -109,7 +109,7 @@ export class ExpensesRepository {
             take: 3,
             orderBy: { date: 'desc' },
           });
-          this.logger.log('Sample user expenses (no filters):', sampleExpenses.map(e => ({
+          this.logger.log('Sample user expenses (no filters):', sampleExpenses.map((e: any) => ({
             id: e.id,
             description: e.description,
             amount: e.amount.toString(),
@@ -219,7 +219,7 @@ export class ExpensesRepository {
           orderBy: { date: 'desc' },
         });
         
-        this.logger.log('Recent expenses:', recentExpenses.map(e => ({
+        this.logger.log('Recent expenses:', recentExpenses.map((e: any) => ({
           id: e.id,
           description: e.description,
           amount: e.amount.toString(),

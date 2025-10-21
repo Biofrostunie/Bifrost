@@ -163,9 +163,9 @@ docker-compose up -d
 ```
 
 Acesse:
-- Frontend: http://localhost:5173
-- Backend API: http://localhost:3000/api
-- Swagger: http://localhost:3000/api-docs
+- Frontend: http://localhost:8080/
+- Backend API: http://localhost:3000/api/v1
+- Swagger: http://localhost:3000/api
 
 ### Instalação Manual
 
@@ -238,11 +238,111 @@ npm run preview
 
 ## 📚 Documentação da API
 
-A documentação da API está disponível através do Swagger UI:
-- Local: http://localhost:3000/api-docs
-- Produção: https://api.bifrost.com/api-docs
+A API segue o padrão REST com versionamento via URI.
 
-## 🧪 Testes
+- Base URL: `http://localhost:3000/api/v1`
+- Prefixo global: `api`
+- Versão padrão: `v1` (URI)
+- Swagger UI: `http://localhost:3000/api` (com persistência de autorização)
+- Autenticação: JWT (`Authorization: Bearer <token>`) extraído do header
+- Respostas: envelope padrão via `TransformInterceptor` (`{ data, message, ... }`)
+- Erros: tratados por `HttpExceptionFilter` com mensagens e status apropriados
+
+### Endpoints principais
+- `POST /api/v1/auth/login` — retorna `access_token` e dados do usuário
+- `POST /api/v1/auth/register` — cria conta (não loga automaticamente)
+- `GET /api/v1/users/profile` — perfil do usuário autenticado
+- `GET /api/v1/expenses` — lista despesas com filtros (`startDate`, `endDate`, `category`, `essential`)
+- `GET /api/v1/expenses/report/pdf` — gera e retorna PDF de relatório de despesas
+  - Headers: `Accept: application/pdf`, `Authorization: Bearer <token>`
+  - Query: `startDate`, `endDate` (ISO `YYYY-MM-DD`)
+
+### Cabeçalhos e cache
+- CORS liberado para origens de desenvolvimento
+- Headers expostos: `Content-Disposition`, `X-Request-ID`, etc.
+- Cache (Redis) habilitado em algumas rotas; chaves incluem usuário e filtros
+
+---
+
+## 🧠 Backend (NestJS) — Guia Completo
+
+### Módulos e responsabilidades
+- `auth` — login, registro, verificação de email, JWT, guards
+- `users` — perfil e atualização de dados do usuário
+- `expenses` — CRUD de despesas e geração de relatório PDF (via `pdf.service`)
+- `incomes` — CRUD de receitas
+- `financial-concepts` — conteúdos educacionais com seeds
+- `investment-rates` — consulta de taxas externas (SELIC, CDI, etc.)
+- `investment-simulations` — cálculos e simulações
+- `redis` — serviço de cache e verificação de saúde
+- `prisma` — ORM e operações com banco PostgreSQL
+- `trpc` — integração tRPC
+
+### Variáveis de ambiente (exemplos)
+- `PORT=3000`
+- `NODE_ENV=development`
+- `DATABASE_URL=postgresql://user:pass@localhost:5432/bifrost`
+- `REDIS_URL=redis://localhost:6379`
+- `JWT_SECRET=uma_chave_segura`
+- `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USER`, `EMAIL_PASS` (se aplicável)
+
+### PDF (Puppeteer)
+- Serviço: `pdf.service.ts`
+- Geração por HTML renderizado em Chromium headless
+- Retorno via `application/pdf` e `Content-Disposition`
+- Tratamento de erros detalhado e logs
+
+### Banco de Dados
+- Prisma com migrações em `backend/prisma/migrations`
+- Seeds para conceitos financeiros em `backend/prisma/financial-concepts-seed.ts`
+
+### Execução
+- Desenvolvimento: `npm run start:dev`
+- Testes: `npm run test`, `npm run test:e2e`, `npm run test:load`
+- Build: `npm run build`
+
+Para detalhes, consulte `backend/README.md`.
+
+---
+
+## 🎨 Frontend (React + Vite) — Guia Completo
+
+### Ambiente e configuração
+- Porta de desenvolvimento: `8080` (definida em `vite.config.ts`)
+- Variáveis: `VITE_API_URL` (ex.: `http://localhost:3000/api/v1`)
+- Alias de paths: `@` apontando para `src/`
+
+### Bibliotecas
+- UI: shadcn-ui, Tailwind CSS, Lucide
+- Estado e requisições: TanStack React Query
+- Formulários: React Hook Form + Zod
+- Gráficos: Recharts
+
+### Consumo de API
+- Helper `apiFetch` em `src/lib/api.ts`
+  - Prepend `API_BASE_URL`
+  - Headers JSON e `Authorization` quando `token` é fornecido
+- Exemplo de chamada autenticada (PDF):
+  - `GET {API_BASE_URL}/expenses/report/pdf?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD`
+  - Headers: `Accept: application/pdf`, `Authorization: Bearer <token>`
+
+### Autenticação
+- Store `authStore` salva `token` em `localStorage` (`token`)
+- `userStore` lê `token` e busca `/users/profile`
+
+### Execução
+- Desenvolvimento: `npm run dev` → `http://localhost:8080/`
+- Build: `npm run build`
+- Preview: `npm run preview`
+
+Para detalhes, consulte `frontend/README.md`.
+
+---
+
+## 🔗 Referências
+- Backend: `backend/README.md`
+- Frontend: `frontend/README.md`
+- API (Swagger): `http://localhost:3000/api`
 
 ### Backend
 O backend inclui testes unitários, de integração e de carga:
