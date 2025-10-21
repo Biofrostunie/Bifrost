@@ -1,6 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Home, Calculator, BookOpen, TrendingUp, Lightbulb } from "lucide-react";
+import { Home, Calculator, BookOpen, TrendingUp, Lightbulb, CreditCard, Wallet } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -42,6 +42,18 @@ export function DesktopNavigation() {
       title: "Base de Conhecimento",
       path: "/conhecimento",
       icon: Lightbulb,
+      color: "finance-blue"
+    },
+    {
+      title: "Conta Bancária",
+      path: "/contas-bancarias/novo",
+      icon: Wallet,
+      color: "finance-blue"
+    },
+    {
+      title: "Cartão de Crédito",
+      path: "/cartoes/novo",
+      icon: CreditCard,
       color: "finance-blue"
     }
   ];

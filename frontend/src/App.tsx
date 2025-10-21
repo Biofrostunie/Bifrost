@@ -16,6 +16,8 @@ import CreateAccount from "./pages/CreateAccount";
 import PasswordRecovery from "./pages/PasswordRecovery";
 import VerifyEmail from "./pages/VerifyEmail";
 import ProtectedRoute from "./components/ProtectedRoute";
+import BankAccountCreate from "@/pages/BankAccountCreate";
+import CreditCardCreate from "@/pages/CreditCardCreate";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +40,8 @@ const App = () => (
               <Route path="/educacao" element={<FinancialEducation />} />
               <Route path="/investimentos" element={<InvestmentCalculator />} />
               <Route path="/conhecimento" element={<KnowledgeBase />} />
+              <Route path="/contas-bancarias/novo" element={<BankAccountCreate />} />
+              <Route path="/cartoes/novo" element={<CreditCardCreate />} />
             </Route>
             
             <Route path="*" element={<NotFound />} />

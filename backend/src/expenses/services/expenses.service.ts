@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Logger, BadRequestException } from '@nestjs/common';
 import { ExpensesRepository } from '../repositories/expenses.repository';
 import { CreateExpenseDto } from '../dto/create-expense.dto';
 import { UpdateExpenseDto } from '../dto/update-expense.dto';
@@ -7,6 +7,7 @@ import { PdfService, ExpenseReportData } from '../../common/services/pdf.service
 import { UsersService } from '../../users/services/users.service';
 import { CacheService } from '../../redis/cache.service';
 import { Cache } from '../../redis/decorators/cache.decorator';
+import { PaymentMethod } from '@prisma/client';
 
 @Injectable()
 export class ExpensesService {
@@ -27,6 +28,17 @@ export class ExpensesService {
 
   async createExpense(userId: string, createExpenseDto: CreateExpenseDto) {
     this.logger.log(`Creating expense for user: ${userId}`);
+
+    // Validate payment method ties
+    if (createExpenseDto.paymentMethod === PaymentMethod.CREDIT_CARD && !createExpenseDto.creditCardId) {
+      throw new BadRequestException('creditCardId is required when paymentMethod is CREDIT_CARD');
+    }
+    if (
+      (createExpenseDto.paymentMethod === PaymentMethod.BANK_ACCOUNT) &&
+      !createExpenseDto.bankAccountId
+    ) {
+      throw new BadRequestException('bankAccountId is required when paymentMethod is BANK_ACCOUNT');
+    }
     
     const expense = await this.expensesRepository.create({
       ...createExpenseDto,
@@ -58,7 +70,22 @@ export class ExpensesService {
     expenseId: string,
     updateExpenseDto: UpdateExpenseDto,
   ) {
-    await this.getExpenseById(userId, expenseId); // Validates ownership
+    const existing = await this.getExpenseById(userId, expenseId); // Validates ownership
+
+    // Validate ties based on effective values
+    const effectivePaymentMethod = updateExpenseDto.paymentMethod ?? existing.paymentMethod;
+    const effectiveCreditCardId = updateExpenseDto.creditCardId ?? (existing as any).creditCardId;
+    const effectiveBankAccountId = updateExpenseDto.bankAccountId ?? (existing as any).bankAccountId;
+
+    if (effectivePaymentMethod === PaymentMethod.CREDIT_CARD && !effectiveCreditCardId) {
+      throw new BadRequestException('creditCardId is required when paymentMethod is CREDIT_CARD');
+    }
+    if (
+      (effectivePaymentMethod === PaymentMethod.BANK_ACCOUNT) &&
+      !effectiveBankAccountId
+    ) {
+      throw new BadRequestException('bankAccountId is required when paymentMethod is BANK_ACCOUNT');
+    }
 
     const updatedExpense = await this.expensesRepository.update(expenseId, updateExpenseDto);
 
@@ -255,29 +282,18 @@ export class ExpensesService {
 
   private async invalidateUserExpenseCache(userId: string): Promise<void> {
     try {
-      await this.cacheService.delPattern(`expenses:*${userId}*`);
-      await this.cacheService.delPattern(`expense_totals:*${userId}*`);
-      await this.cacheService.delPattern(`pdf_report:${userId}:*`);
-      this.logger.debug(`Cache invalidated for user: ${userId}`);
+      const cacheKeys = [`expenses:${userId}`, `expense_totals:${userId}`];
+      await Promise.all(cacheKeys.map((key) => this.cacheService.del(key)));
+      this.logger.log(`Invalidated expense cache for user: ${userId}`);
     } catch (error) {
-      this.logger.warn(`Failed to invalidate cache for user ${userId}:`, error);
+      this.logger.error(`Failed to invalidate cache for user ${userId}:`, error);
     }
   }
 
   private convertToNumber(value: any): number {
-    if (typeof value === 'number') {
-      return value;
-    }
-    
-    if (typeof value === 'object' && value !== null && typeof value.toNumber === 'function') {
-      return value.toNumber();
-    }
-    
-    const parsed = parseFloat(value);
-    if (isNaN(parsed)) {
-      throw new Error(`Invalid amount value: ${value}`);
-    }
-    
-    return parsed;
+    if (typeof value === 'number') return value;
+    if (typeof value === 'string') return parseFloat(value);
+    if (value && typeof value === 'object' && 'toNumber' in value) return value.toNumber();
+    throw new Error(`Cannot convert value to number: ${value}`);
   }
 }

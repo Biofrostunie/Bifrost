@@ -24,13 +24,24 @@ export class ExpensesRepository {
   async findById(id: string) {
     return this.prisma.expense.findUnique({
       where: { id },
+      include: {
+        user: {
+          select: { id: true, email: true, fullName: true },
+        },
+        bankAccount: {
+          select: { id: true, alias: true, bankName: true },
+        },
+        creditCard: {
+          select: { id: true, alias: true, brand: true },
+        },
+      },
     });
   }
 
   async findByUserId(userId: string, query: GetExpensesQueryDto) {
     this.logger.log(`Finding expenses for user: ${userId} with query:`, query);
     
-    const { startDate, endDate, category, essential } = query;
+    const { startDate, endDate, category, essential, paymentMethod, bankAccountId, creditCardId } = query;
     
     const where: any = { userId };
 
@@ -65,6 +76,22 @@ export class ExpensesRepository {
       this.logger.log(`Essential filter: ${essential}`);
     }
 
+    // Build paymentMethod filter
+    if (paymentMethod) {
+      where.paymentMethod = paymentMethod;
+      this.logger.log(`Payment method filter: ${paymentMethod}`);
+    }
+
+    if (bankAccountId) {
+      where.bankAccountId = bankAccountId;
+      this.logger.log(`Bank account filter: ${bankAccountId}`);
+    }
+
+    if (creditCardId) {
+      where.creditCardId = creditCardId;
+      this.logger.log(`Credit card filter: ${creditCardId}`);
+    }
+
     this.logger.log('Final where clause:', JSON.stringify(where, null, 2));
 
     try {
@@ -78,6 +105,12 @@ export class ExpensesRepository {
               email: true,
               fullName: true,
             },
+          },
+          bankAccount: {
+            select: { id: true, alias: true, bankName: true },
+          },
+          creditCard: {
+            select: { id: true, alias: true, brand: true },
           },
         },
       });
@@ -94,6 +127,9 @@ export class ExpensesRepository {
           date: e.date,
           essential: e.essential,
           userId: e.userId,
+          paymentMethod: e.paymentMethod,
+          bankAccount: e.bankAccount ? { id: e.bankAccount.id, alias: e.bankAccount.alias } : null,
+          creditCard: e.creditCard ? { id: e.creditCard.id, alias: e.creditCard.alias } : null,
         })));
       } else {
         // Check if user has any expenses at all
@@ -141,6 +177,11 @@ export class ExpensesRepository {
     return this.prisma.expense.update({
       where: { id },
       data: updateData,
+      include: {
+        user: { select: { id: true, email: true, fullName: true } },
+        bankAccount: { select: { id: true, alias: true, bankName: true } },
+        creditCard: { select: { id: true, alias: true, brand: true } },
+      },
     });
   }
 

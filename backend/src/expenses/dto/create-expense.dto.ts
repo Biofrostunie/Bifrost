@@ -1,6 +1,7 @@
-import { IsString, IsNumber, IsBoolean, IsDateString, IsOptional, Min } from 'class-validator';
+import { IsString, IsNumber, IsBoolean, IsDateString, IsOptional, Min, IsUUID, IsEnum } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
+import { PaymentMethod } from '@prisma/client';
 
 export class CreateExpenseDto {
   @ApiProperty({ description: 'Expense description', example: 'Lunch at restaurant' })
@@ -30,4 +31,19 @@ export class CreateExpenseDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @ApiPropertyOptional({ description: 'Payment method', enum: PaymentMethod })
+  @IsOptional()
+  @IsEnum(PaymentMethod)
+  paymentMethod?: PaymentMethod;
+
+  @ApiPropertyOptional({ description: 'Associated bank account ID when applicable' })
+  @IsOptional()
+  @IsUUID()
+  bankAccountId?: string;
+
+  @ApiPropertyOptional({ description: 'Associated credit card ID when applicable' })
+  @IsOptional()
+  @IsUUID()
+  creditCardId?: string;
 }

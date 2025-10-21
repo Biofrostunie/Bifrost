@@ -1,23 +1,12 @@
 
-import { useState } from "react";
-import { PlusCircle } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
-import { toast } from "sonner";
-
-export interface Expense {
-  id: string;
-  description: string;
-  amount: number;
-  category: string;
-  date: string;
-  notes?: string;
-  essential: boolean;
-}
+import { formatCurrency } from "@/lib/formatters";
+import type { Expense, PaymentMethod } from "@/pages/ExpenseCalculator";
+import { apiFetch } from "@/lib/api";
 
 interface ExpenseFormProps {
   onAddExpense: (expense: Omit<Expense, 'id'>) => void;
@@ -32,6 +21,12 @@ const ExpenseForm = ({ onAddExpense, categories: customCategories }: ExpenseForm
   const [notes, setNotes] = useState("");
   const [essential, setEssential] = useState(false);
 
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("CASH");
+  const [bankAccountId, setBankAccountId] = useState<string | undefined>(undefined);
+  const [creditCardId, setCreditCardId] = useState<string | undefined>(undefined);
+  const [bankAccounts, setBankAccounts] = useState<Array<{ id: string; bankName: string; alias?: string }>>([]);
+  const [creditCards, setCreditCards] = useState<Array<{ id: string; issuer: string; alias?: string; last4?: string; limit?: number }>>([]);
+
   const defaultCategories = [
     { value: "alimentacao", label: "Alimentação" },
     { value: "transporte", label: "Transporte" },
@@ -44,123 +39,163 @@ const ExpenseForm = ({ onAddExpense, categories: customCategories }: ExpenseForm
   
   const categories = customCategories || defaultCategories;
 
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    apiFetch('/bank-accounts', { token })
+      .then((res) => setBankAccounts((res?.data ?? []) as any[]))
+      .catch(() => {});
+    apiFetch('/credit-cards', { token })
+      .then((res) => setCreditCards((res?.data ?? []) as any[]))
+      .catch(() => {});
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!description || !amount) {
-      toast.error("Preencha todos os campos obrigatórios");
-      return;
-    }
+    if (!description || !amount || isNaN(Number(amount))) return;
 
-    // Corrige o problema de fuso horário ao garantir que a data seja tratada como local
-    const localDate = new Date(date + 'T12:00:00'); // Adiciona horário do meio-dia para evitar problemas de fuso
-    const formattedDate = localDate.toISOString().split('T')[0]; // Mantém apenas a parte da data
-
-    const newExpense: Omit<Expense, 'id'> = {
+    const payload: Omit<Expense, 'id'> = {
       description,
-      amount: parseFloat(amount),
+      amount: Number(amount),
       category,
-      date: formattedDate,
-      notes: notes || undefined,
+      date,
       essential,
+      notes: notes || undefined,
+      paymentMethod,
+      bankAccountId: paymentMethod === 'BANK_ACCOUNT' ? bankAccountId : undefined,
+      creditCardId: paymentMethod === 'CREDIT_CARD' ? creditCardId : undefined,
     };
 
-    onAddExpense(newExpense);
-    resetForm();
-    toast.success("Despesa adicionada com sucesso!");
-  };
+    onAddExpense(payload);
 
-  const resetForm = () => {
+    // reset
     setDescription("");
     setAmount("");
-    setCategory("outros");
-    setDate(new Date().toISOString().split('T')[0]);
     setNotes("");
     setEssential(false);
+    setPaymentMethod('CASH');
+    setBankAccountId(undefined);
+    setCreditCardId(undefined);
   };
 
   return (
-    <Card className="p-4 mb-6">
-      <h2 className="text-xl font-semibold mb-4">Adicionar Despesa</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="description">Descrição*</Label>
+          <Label>Descrição</Label>
           <Input
-            id="description"
+            type="text"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="Ex: Compras no supermercado"
+            placeholder="Ex.: Mercado, combustível..."
           />
         </div>
-        
         <div>
-          <Label htmlFor="amount">Valor (R$)*</Label>
+          <Label>Valor</Label>
           <Input
-            id="amount"
             type="number"
+            min="0"
+            step="0.01"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            placeholder="0.00"
-            step="0.01"
-            min="0"
+            placeholder="0,00"
           />
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <Label>Categoria</Label>
+          <Select onValueChange={(v) => setCategory(v)} defaultValue={category}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((c) => (
+                <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div>
+          <Label>Data</Label>
+          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        </div>
+        <div>
+          <Label>Essencial?</Label>
+          <Select onValueChange={(v) => setEssential(v === 'true')} defaultValue={String(essential)}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="false">Não</SelectItem>
+              <SelectItem value="true">Sim</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Origem do gasto: cartão (crédito) ou conta (débito) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <Label>Origem do Pagamento</Label>
+          <Select onValueChange={(v) => setPaymentMethod(v as PaymentMethod)} defaultValue={paymentMethod}>
+            <SelectTrigger>
+              <SelectValue placeholder="Selecione" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="CASH">Dinheiro</SelectItem>
+              <SelectItem value="BANK_ACCOUNT">Conta (Débito)</SelectItem>
+              <SelectItem value="CREDIT_CARD">Cartão (Crédito)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {paymentMethod === 'BANK_ACCOUNT' && (
           <div>
-            <Label htmlFor="category">Categoria</Label>
-            <Select value={category} onValueChange={setCategory}>
+            <Label>Conta Bancária</Label>
+            <Select onValueChange={(v) => setBankAccountId(v)} defaultValue={bankAccountId}>
               <SelectTrigger>
-                <SelectValue placeholder="Selecione uma categoria" />
+                <SelectValue placeholder="Selecione a conta" />
               </SelectTrigger>
               <SelectContent>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.value} value={cat.value}>
-                    {cat.label}
+                {bankAccounts.map((acc) => (
+                  <SelectItem key={acc.id} value={acc.id}>
+                    {acc.alias ? `${acc.alias} (${acc.bankName})` : acc.bankName}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          
+        )}
+
+        {paymentMethod === 'CREDIT_CARD' && (
           <div>
-            <Label htmlFor="date">Data</Label>
-            <Input
-              id="date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
+            <Label>Cartão de Crédito</Label>
+            <Select onValueChange={(v) => setCreditCardId(v)} defaultValue={creditCardId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecione o cartão" />
+              </SelectTrigger>
+              <SelectContent>
+                {creditCards.map((cc) => (
+                  <SelectItem key={cc.id} value={cc.id}>
+                    {(cc.alias || cc.issuer) + (cc.last4 ? ` •••• ${cc.last4}` : '')}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-        </div>
-        
-        <div>
-          <Label htmlFor="notes">Observações (opcional)</Label>
-          <Textarea
-            id="notes"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Detalhes adicionais sobre a despesa..."
-          />
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            id="essential"
-            checked={essential}
-            onChange={(e) => setEssential(e.target.checked)}
-            className="h-4 w-4"
-          />
-          <Label htmlFor="essential" className="text-sm">Despesa Essencial</Label>
-        </div>
-        
-        <Button type="submit" className="w-full">
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Adicionar Despesa
-        </Button>
-      </form>
-    </Card>
+        )}
+      </div>
+
+      <div>
+        <Label>Observações</Label>
+        <Input type="text" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Opcional" />
+      </div>
+
+      <div className="flex justify-end">
+        <Button type="submit">Adicionar</Button>
+      </div>
+    </form>
   );
 };
 

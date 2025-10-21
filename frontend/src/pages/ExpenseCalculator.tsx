@@ -16,6 +16,8 @@ import {
 import { useExpenseStore } from "@/store";
 import { toast } from "sonner";
 
+export type PaymentMethod = "CASH" | "BANK_ACCOUNT" | "CREDIT_CARD" | "OTHER";
+
 export type Expense = {
   id: string;
   description: string;
@@ -24,6 +26,9 @@ export type Expense = {
   date: string;
   essential: boolean;
   notes?: string;
+  paymentMethod?: PaymentMethod;
+  bankAccountId?: string;
+  creditCardId?: string;
 };
 
 const EXPENSES_PER_PAGE = 10;
@@ -52,25 +57,8 @@ const ExpenseCalculator = () => {
     }
   }, [error, clearError]);
 
-  console.log("ExpenseCalculator state - expenses:", expenses);
-
-  const handleAddExpense = async (expense: Omit<Expense, "id">) => {
-    try {
-      await addExpense(expense);
-      toast.success("Despesa adicionada com sucesso!");
-    } catch (error) {
-      // O erro já é tratado no store
-    }
-  };
-
-  const handleRemoveExpense = async (id: string) => {
-    console.log("Removing expense with id:", id);
-    try {
-      await removeExpense(id);
-      toast.success("Despesa removida com sucesso!");
-    } catch (error) {
-      // O erro já é tratado no store
-    }
+  const handleAddExpense = async (expense: Omit<Expense, 'id'>) => {
+    await addExpense(expense);
   };
 
   // Pagination logic
@@ -85,7 +73,7 @@ const ExpenseCalculator = () => {
 
   return (
     <AppLayout title="Calculadora de Gastos">
-      <div className="max-w-7xl mx-auto p-4">
+      <div className="max-w-7xl mx-auto p-6 min-h-screen">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-finance-dark dark:text-white">
             Calculadora de Gastos
@@ -95,16 +83,16 @@ const ExpenseCalculator = () => {
           )}
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           {/* Left Column - Form and List */}
-          <div className="space-y-6">
+          <div className="lg:col-span-2 space-y-6">
             <div className="bg-white dark:bg-slate-700/60 rounded-lg p-6 border border-gray-200 dark:border-slate-500/50">
               <ExpenseForm onAddExpense={handleAddExpense} />
             </div>
             
             {expenses.length > 0 && (
               <div className="bg-white dark:bg-slate-700/60 rounded-lg p-6 border border-gray-200 dark:border-slate-500/50">
-                <ExpenseList expenses={currentExpenses} onRemoveExpense={handleRemoveExpense} />
+                <ExpenseList expenses={currentExpenses} onRemoveExpense={removeExpense} />
                 
                 {/* Pagination */}
                 {expenses.length > EXPENSES_PER_PAGE && (

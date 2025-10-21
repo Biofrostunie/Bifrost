@@ -17,6 +17,8 @@ import { IncomesModule } from './incomes/incomes.module';
 import { InvestmentSimulationsModule } from './investment-simulations/investment-simulations.module';
 import { FinancialConceptsModule } from './financial-concepts/financial-concepts.module';
 import { InvestmentRatesModule } from './investment-rates/investment-rates.module';
+import { BankAccountsModule } from './bank-accounts/bank-accounts.module';
+import { CreditCardsModule } from './credit-cards/credit-cards.module';
 
 // Redis interceptors
 import { CacheInterceptor } from './redis/interceptors/cache.interceptor';
@@ -81,6 +83,8 @@ import { CacheInterceptor } from './redis/interceptors/cache.interceptor';
     InvestmentSimulationsModule,
     FinancialConceptsModule,
     InvestmentRatesModule,
+    BankAccountsModule,
+    CreditCardsModule,
   ],
   controllers: [],
   providers: [
