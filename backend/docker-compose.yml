@@ -89,6 +89,9 @@ services:
       REDIS_PORT: 6379
       REDIS_PASSWORD: senha-forte-confia
       REDIS_DB: 0
+      # URLs públicas (parametrizáveis)
+      FRONTEND_URL: ${FRONTEND_PUBLIC_URL:-http://localhost:80}
+      BACKEND_URL: ${BACKEND_PUBLIC_URL:-http://localhost:3000}
     ports:
       - "3000:3000"
     depends_on:
