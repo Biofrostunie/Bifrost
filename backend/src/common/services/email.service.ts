@@ -54,10 +54,10 @@ export class EmailService {
     await this.checkAndSetCooldown(cooldownKey, this.sendCooldownSeconds);
 
     try {
-      const verificationUrl = `${this.configService.get(
-        'FRONTEND_URL',
-        'http://localhost:8080',
-      )}/verify-email?token=${token}`;
+      // Usa FRONTEND_URL do .env e normaliza removendo barras finais para evitar //verify-email
+      const baseUrl = this.configService.get<string>('FRONTEND_URL', 'http://localhost:8080');
+      const normalizedBaseUrl = baseUrl.replace(/\/+$/, '');
+      const verificationUrl = `${normalizedBaseUrl}/verify-email?token=${token}`;
 
       const mailOptions = {
         from: `${this.configService.get('EMAIL_FROM_NAME')} <${this.configService.get('EMAIL_FROM')}>`,
