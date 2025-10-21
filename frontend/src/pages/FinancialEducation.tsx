@@ -5,6 +5,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, ExternalLink, TrendingUp, Download, ShoppingCart, AlertCircle, Lightbulb, DollarSign, PiggyBank, Target, TrendingDown } from "lucide-react";
+import { useEffect, useState } from "react";
+import { apiFetch } from "@/lib/api";
 
 const FinancialEducation = () => {
   const courseRecommendations = [
@@ -80,26 +82,37 @@ const FinancialEducation = () => {
       description: "Segundo volume da série traz a história de treze importantes figuras do mercado financeiro, como Guilherme Benchimol, fundador da XP, e Henrique Bredda, gestor do Alaska Asset Management."
     },
     {
-      title: "Mercado Financeiro: Produtos e Serviços",
-      description: "Neste livro, Eduardo Fortuna apresenta os diversos produtos e serviços disponíveis no mercado financeiro, além de trazer estratégias de investimentos para entusiastas, investidores e profissionais da área."
-    },
-    {
-      title: "Quando os gênios falham – A ascensão e a queda da Long-Term Capital Management",
-      description: "Neste livro produzido pelo jornalista Roger Lowenstein, uma série de entrevistas e memórias leva o leitor à década de 1990 para entender como a famosa gestora de Wall Street passou de uma instituição com US$ 100 bilhões sob sua gestão para um dos maiores desastres do mercado financeiro."
-    },
-    {
-      title: "A Lógica do Cisne Negro",
-      description: "O autor fala sobre como surge um cisne negro – um fenômeno que é altamente improvável e produz um grande impacto – como só posteriormente o ser humano é capaz de elaborar uma explicação lógica sobre o que aconteceu."
-    },
-    {
-      title: "O Jogo da Mentira",
-      description: "Para quem gosta de tesouraria, o livro de Michael Lewis explica qual o caminho percorrido pelo dinheiro no mercado financeiro e conta como os corretores de Wall Street lidavam com balanços financeiros, grande fortunas e lucros e, até mesmo, prejuízos inesperados."
-    },
-    {
-      title: "A Grande Aposta",
+      title: "A Grande Jogada",
       description: "Outra obra de Michael Lewis, que virou até filme. O autor aborda, em detalhes, os motivos que levaram à crise do subprime americano em 2008, um dos maiores colapsos financeiros da história, que levou a uma crise econômica global."
     }
   ];
+
+  // Estado de taxas (dinâmico via API)
+  const [rates, setRates] = useState<Record<string, number>>({});
+  const [loadingRates, setLoadingRates] = useState(false);
+  const [errorRates, setErrorRates] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoadingRates(true);
+    apiFetch<any>("/investment-rates")
+      .then((res) => {
+        const payload = (res?.data?.data ?? res?.data ?? []) as Array<{ rateType: string; value: number }>;
+        const map: Record<string, number> = {};
+        for (const r of payload) {
+          map[r.rateType] = Number(r.value);
+        }
+        setRates(map);
+      })
+      .catch((err) => {
+        setErrorRates(err?.message || "Erro ao carregar taxas");
+      })
+      .finally(() => setLoadingRates(false));
+  }, []);
+
+  // Formatadores
+  const formatPct = (v?: number) => (v === undefined ? (loadingRates ? "..." : "—") : `${v.toFixed(2)}%`);
+  // CDI anualizado a partir da taxa diária (aprox. 252 dias úteis)
+  const cdiAnnual = rates.cdi !== undefined ? ((Math.pow(1 + (rates.cdi / 100), 252) - 1) * 100) : undefined;
 
   return (
     <AppLayout title="Educação Financeira">
@@ -116,26 +129,27 @@ const FinancialEducation = () => {
           Explore os indicadores econômicos, nossas recomendações de cursos e livros.
         </p>
 
+        {/* Indicadores dinâmicos */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <FinancialIndicator
             title="Taxa Selic"
-            value="10,5%"
-            change="+0.5"
-            isPositive={false}
+            value={formatPct(rates.selic)}
+            change={errorRates ? "—" : "+0.0"}
+            isPositive={!errorRates}
             description="Taxa básica de juros da economia"
           />
           <FinancialIndicator
             title="IPCA (12m)"
-            value="4,2%"
-            change="-0.3"
+            value={formatPct(rates.ipca)}
+            change={errorRates ? "—" : "0.0"}
             isPositive={true}
             description="Índice oficial de inflação"
           />
           <FinancialIndicator
             title="CDI"
-            value="10,4%"
-            change="+0.5"
-            isPositive={false}
+            value={formatPct(cdiAnnual)}
+            change={errorRates ? "—" : "+0.0"}
+            isPositive={!errorRates}
             description="Certificado de Depósito Interbancário"
           />
         </div>
