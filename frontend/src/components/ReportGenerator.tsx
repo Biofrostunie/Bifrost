@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar, FileText } from "lucide-react";
+import { Calendar, FileText, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 import { Expense } from "@/pages/ExpenseCalculator";
 import { formatCurrency } from "@/lib/formatters";
+import html2canvas from "html2canvas";
 
 interface ReportGeneratorProps {
   expenses: Expense[];
@@ -55,35 +56,106 @@ const ReportGenerator = ({ expenses }: ReportGeneratorProps) => {
       .reduce((acc, expense) => acc + expense.amount, 0);
     const nonEssentialTotal = totalAmount - essentialTotal;
 
-    // Generate report content
-    const reportContent = `
-RELATÓRIO DE GASTOS
-Período: ${new Date(startDate).toLocaleDateString('pt-BR')} a ${new Date(endDate).toLocaleDateString('pt-BR')}
-
-RESUMO GERAL:
-Total de despesas: ${filteredExpenses.length}
-Valor total: ${formatCurrency(totalAmount)}
-Gastos essenciais: ${formatCurrency(essentialTotal)}
-Gastos não essenciais: ${formatCurrency(nonEssentialTotal)}
-
-DETALHES POR DESPESA:
-${filteredExpenses.map(expense => 
-  `${new Date(expense.date).toLocaleDateString('pt-BR')} - ${expense.description} - ${formatCurrency(expense.amount)} (${expense.essential ? 'Essencial' : 'Não Essencial'})`
-).join('\n')}
+    // Criar elemento HTML para o relatório
+    const reportDiv = document.createElement('div');
+    reportDiv.style.padding = '20px';
+    reportDiv.style.fontFamily = 'Arial, sans-serif';
+    reportDiv.style.maxWidth = '800px';
+    reportDiv.style.margin = '0 auto';
+    reportDiv.style.backgroundColor = 'white';
+    reportDiv.style.color = 'black';
+    
+    // Cabeçalho do relatório
+    const header = document.createElement('div');
+    header.style.textAlign = 'center';
+    header.style.marginBottom = '20px';
+    header.innerHTML = `
+      <h1 style="color: #667eea; margin-bottom: 10px; font-size: 24px;">RELATÓRIO DE GASTOS</h1>
+      <p style="font-size: 16px; margin-bottom: 5px;">Período: ${new Date(startDate).toLocaleDateString('pt-BR')} a ${new Date(endDate).toLocaleDateString('pt-BR')}</p>
+      <p style="font-size: 14px; color: #666;">Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}</p>
     `;
-
-    // Create and download file
-    const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `relatorio-gastos-${startDate}-${endDate}.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-
-    toast.success("Relatório gerado com sucesso!");
+    reportDiv.appendChild(header);
+    
+    // Resumo geral
+    const summary = document.createElement('div');
+    summary.style.marginBottom = '30px';
+    summary.style.padding = '15px';
+    summary.style.backgroundColor = '#f8f9fa';
+    summary.style.borderRadius = '8px';
+    summary.innerHTML = `
+      <h2 style="color: #4a5568; margin-bottom: 15px; font-size: 18px;">RESUMO GERAL</h2>
+      <p style="margin-bottom: 8px; font-size: 14px;"><strong>Total de despesas:</strong> ${filteredExpenses.length}</p>
+      <p style="margin-bottom: 8px; font-size: 14px;"><strong>Valor total:</strong> ${formatCurrency(totalAmount)}</p>
+      <p style="margin-bottom: 8px; font-size: 14px;"><strong>Gastos essenciais:</strong> ${formatCurrency(essentialTotal)}</p>
+      <p style="margin-bottom: 8px; font-size: 14px;"><strong>Gastos não essenciais:</strong> ${formatCurrency(nonEssentialTotal)}</p>
+    `;
+    reportDiv.appendChild(summary);
+    
+    // Tabela de despesas
+    const detailsTable = document.createElement('div');
+    detailsTable.innerHTML = `
+      <h2 style="color: #4a5568; margin-bottom: 15px; font-size: 18px;">DETALHES POR DESPESA</h2>
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead>
+          <tr style="background-color: #667eea; color: white;">
+            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Data</th>
+            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Descrição</th>
+            <th style="padding: 10px; text-align: right; border: 1px solid #ddd;">Valor</th>
+            <th style="padding: 10px; text-align: center; border: 1px solid #ddd;">Tipo</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${filteredExpenses.map(expense => `
+            <tr style="background-color: ${expense.essential ? '#f0fff4' : '#fff5f5'};">
+              <td style="padding: 8px; text-align: left; border: 1px solid #ddd;">${new Date(expense.date).toLocaleDateString('pt-BR')}</td>
+              <td style="padding: 8px; text-align: left; border: 1px solid #ddd;">${expense.description}</td>
+              <td style="padding: 8px; text-align: right; border: 1px solid #ddd;">${formatCurrency(expense.amount)}</td>
+              <td style="padding: 8px; text-align: center; border: 1px solid #ddd;">
+                <span style="padding: 3px 8px; border-radius: 4px; font-size: 12px; background-color: ${expense.essential ? '#c6f6d5' : '#fed7d7'}; color: ${expense.essential ? '#22543d' : '#742a2a'};">
+                  ${expense.essential ? 'Essencial' : 'Não Essencial'}
+                </span>
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+    reportDiv.appendChild(detailsTable);
+    
+    // Adicionar o elemento ao DOM temporariamente
+    document.body.appendChild(reportDiv);
+    
+    // Converter para canvas e depois para imagem PNG (simulando PDF)
+     toast.loading("Gerando relatório...");
+     
+     html2canvas(reportDiv, {
+       scale: 2, // Melhor qualidade
+       useCORS: true,
+       logging: false,
+       backgroundColor: '#ffffff'
+     }).then(canvas => {
+       // Remover o elemento do DOM
+       document.body.removeChild(reportDiv);
+       
+       // Converter canvas para imagem
+       const imgData = canvas.toDataURL('image/png');
+       
+       // Criar link para download
+       const link = document.createElement('a');
+       link.href = imgData;
+       link.download = `relatorio-gastos-${startDate}-${endDate}.pdf`;
+       document.body.appendChild(link);
+       link.click();
+       document.body.removeChild(link);
+       
+       toast.dismiss();
+        toast.success("Relatório PDF gerado com sucesso!");
+      }).catch(error => {
+        document.body.removeChild(reportDiv);
+        console.error("Erro ao gerar relatório:", error);
+        toast.dismiss();
+        toast.error("Erro ao gerar o relatório. Tente novamente.");
+      });
     setIsOpen(false);
   };
 
