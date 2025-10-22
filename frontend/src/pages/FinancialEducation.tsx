@@ -97,8 +97,12 @@ const FinancialEducation = () => {
     const fetchRates = async () => {
       try {
         setLoading(true);
-        const resp = await apiFetch<{ success: boolean; data: any[] }>("/investment-rates");
-        const data = resp?.data ?? [];
+        const resp = await apiFetch<any>("/investment-rates");
+        const data = Array.isArray(resp?.data) 
+          ? resp.data 
+          : Array.isArray(resp?.data?.data) 
+            ? resp.data.data 
+            : [];
 
         const mapRates: Record<string, number> = {};
         const mapChanges: Record<string, number> = {};
@@ -142,7 +146,7 @@ const FinancialEducation = () => {
   const cdiAnnual = rates.cdi !== undefined ? (rates.cdi * 252) : undefined;
 
   return (
-    <AppLayout>
+    <AppLayout title="Educação Financeira">
       <div className="space-y-4">
         <div className="bg-blue-50 dark:bg-slate-700/60 p-4 md:p-6 rounded-lg border border-blue-100 dark:border-slate-500/50">
           <div className="flex items-center gap-2 mb-4">
