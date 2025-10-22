@@ -4,7 +4,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, ExternalLink, TrendingUp, Download, ShoppingCart, AlertCircle, Lightbulb, DollarSign, PiggyBank, Target, TrendingDown } from "lucide-react";
+import { BookOpen, ExternalLink, TrendingUp, Download, ShoppingCart, AlertCircle, Lightbulb, DollarSign, PiggyBank, Target, TrendingDown, CreditCard } from "lucide-react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
 import { Link } from "react-router-dom";
