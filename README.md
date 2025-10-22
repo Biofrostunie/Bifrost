@@ -322,6 +322,16 @@ Para detalhes, consulte `backend/README.md`.
 - Helper `apiFetch` em `src/lib/api.ts`
   - Prepend `API_BASE_URL`
   - Headers JSON e `Authorization` quando `token` é fornecido
+  - Retorna objeto já parseado (Promise resolve para JSON). Não use `.json()` no retorno.
+  - Envelope `{ success, data }` aplicado por interceptor. Para endpoints como `/investment-rates`, acesse `resp.data` (ou `resp.data.data` quando houver duplo envelope).
+  - Exemplo:
+    ```ts
+    const resp = await apiFetch('/investment-rates');
+    const rates = Array.isArray(resp?.data) ? resp.data : resp?.data?.data ?? [];
+    ```
+  - Notas de domínio:
+    - SELIC (série 4189 – meta do Copom) é taxa anual.
+    - CDI é diário; para anualizar em exibição, multiplica-se por `252`.
 - Exemplo de chamada autenticada (PDF):
   - `GET {API_BASE_URL}/expenses/report/pdf?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD`
   - Headers: `Accept: application/pdf`, `Authorization: Bearer <token>`
@@ -332,6 +342,7 @@ Para detalhes, consulte `backend/README.md`.
 
 ### Execução
 - Desenvolvimento: `npm run dev` → `http://localhost:8080/`
+  - Em Windows, caso scripts `npm` estejam bloqueados pela política de execução do PowerShell, iniciar com: `node node_modules/vite/bin/vite.js --port 8080`.
 - Build: `npm run build`
 - Preview: `npm run preview`
 

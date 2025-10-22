@@ -120,7 +120,7 @@ bifrost/
 - **CreateAccount**: Registro de novos usuários
 - **PasswordRecovery**: Recuperação de senha
 - **Home**: Dashboard principal
-- **FinancialEducation**: Página de educação financeira
+- **FinancialEducation**: Página de educação financeira (topbar padrão com `AppLayout` e título; exibe indicadores SELIC/IPCA/CDI via `FinancialIndicator`)
 - **ExpenseCalculator**: Calculadora de despesas
 - **InvestmentCalculator**: Simulador de investimentos
 - **KnowledgeBase**: Base de conhecimento financeiro
@@ -150,6 +150,9 @@ bifrost/
 3. **Educação Financeira**:
 
    - Carregamento de conceitos -> Filtro/Busca -> Exibição de detalhes
+   - Indicadores de mercado: consumo de taxas via `apiFetch('/investment-rates')`
+   - Respostas com envelope `{ success, data }`; não usar `.json()`; usar `resp.data` (ou `resp.data.data`)
+   - Unidades: SELIC anual (série 4189), CDI diário anualizado por `252`
 
 4. **Simulação de Investimentos**:
    - Input de parâmetros -> Cálculos -> Geração de gráficos -> Exibição de resultados
@@ -202,6 +205,8 @@ npm i
 # Iniciar servidor de desenvolvimento
 npm run dev
 ```
+
+Nota (Windows): se scripts `npm` estiverem bloqueados pela política de execução do PowerShell, inicie o servidor com `node node_modules/vite/bin/vite.js --port 8080`.
 
 ## Build e Deploy
 
