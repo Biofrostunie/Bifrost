@@ -50,6 +50,44 @@ const FinancialEducation = () => {
     }
   ];
 
+  const bookRecommendations = [
+    {
+      title: "Viver de Dividendos",
+      description: "Aprender estratégias para construir uma carteira de investimentos focada em dividendos",
+      url: "https://www.infomoney.com.br/conteudos/ebooks/viver-de-dividendos/",
+      provider: "InfoMoney",
+      type: "E-book"
+    },
+    {
+      title: "Venture Capital",
+      description: "Entenda o mundo dos investimentos em startups e capital de risco",
+      url: "https://www.infomoney.com.br/conteudos/ebooks/venture-capital/",
+      provider: "InfoMoney",
+      type: "E-book"
+    },
+    {
+      title: "Cartão de Crédito",
+      description: "Guia completo para usar o cartão de crédito de forma inteligente",
+      url: "https://meubolsoemdia.com.br/ebooks/cartao-de-credito",
+      provider: "Meu Bolso em Dia",
+      type: "E-book"
+    },
+    {
+      title: "Crédito Consignado",
+      description: "Tudo que você precisa saber sobre crédito consignado e suas vantagens",
+      url: "https://meubolsoemdia.com.br/ebooks/baixar-ebook-credito-consignado",
+      provider: "Meu Bolso em Dia",
+      type: "E-book"
+    },
+    {
+      title: "25 Livros Gratuitos",
+      description: "Coleção com 25 livros gratuitos sobre educação financeira e investimentos",
+      url: "https://br.pinterest.com/pin/467178161362744698/",
+      provider: "Pinterest",
+      type: "Livros"
+    }
+  ];
+
   const [rates, setRates] = useState<Record<string, number>>({});
   const [changes, setChanges] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState<boolean>(true);
@@ -179,13 +217,90 @@ const FinancialEducation = () => {
                 </Card>
               ))}
             </div>
-            
-            <div className="flex justify-center mt-2">
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                Todos os cursos são gratuitos e oferecidos pelas principais instituições financeiras do país
-              </p>
-            </div>
+          
+          <div className="flex justify-center mt-2">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              Todos os cursos são gratuitos e oferecidos pelas principais instituições financeiras do país
+            </p>
           </div>
+        </div>
+
+        <Tabs defaultValue="livros" className="w-full pt-4">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="livros">Livros e E-books</TabsTrigger>
+            <TabsTrigger value="pagos">Livros Pagos</TabsTrigger>
+          </TabsList>
+          <TabsContent value="livros" className="pt-4">
+            <div className="bg-orange-50 dark:bg-slate-700/60 p-4 md:p-6 rounded-lg border border-orange-100 dark:border-slate-500/50">
+              <div className="flex items-center gap-2 mb-4">
+                <Download className="h-5 w-5 text-orange-600" />
+                <h2 className="text-lg font-semibold text-finance-dark dark:text-white">Livros e E-books Gratuitos</h2>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {bookRecommendations.map((book, index) => (
+                  <Card key={index} className="p-4 hover:shadow-md transition-shadow bg-white dark:bg-slate-600/80 border-gray-200 dark:border-slate-500/50">
+                    <h3 className="font-medium mb-2 text-finance-dark dark:text-white">{book.title}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{book.description}</p>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="text-xs text-orange-600 dark:text-orange-400 font-medium">
+                        {book.provider}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-slate-700 px-2 py-1 rounded">
+                        {book.type}
+                      </div>
+                    </div>
+                    <a href={book.url} target="_blank" rel="noopener noreferrer">
+                      <Button size="sm" variant="outline" className="w-full">
+                        {book.type === "Livros" ? "Ver Coleção" : "Baixar E-book"} <Download className="ml-1 h-3 w-3" />
+                      </Button>
+                    </a>
+                  </Card>
+                ))}
+              </div>
+              
+              <div className="flex justify-center mt-2">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Todos os e-books são gratuitos e oferecidos por fontes confiáveis de educação financeira
+                </p>
+              </div>
+            </div>
+          </TabsContent>
+          <TabsContent value="pagos" className="pt-4">
+            <div className="bg-green-50 dark:bg-slate-700/60 p-4 md:p-6 rounded-lg border border-green-100 dark:border-slate-500/50">
+              <div className="flex items-center gap-2 mb-4">
+                <ShoppingCart className="h-5 w-5 text-green-600" />
+                <h2 className="text-lg font-semibold text-finance-dark dark:text-white">Livros Pagos Recomendados</h2>
+              </div>
+              
+              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-lg p-4 mb-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                  <h3 className="font-medium text-amber-800 dark:text-amber-200">Importante</h3>
+                </div>
+                <p className="text-sm text-amber-700 dark:text-amber-300">
+                  A Bifröst recomenda estes livros com base em sua qualidade e relevância para educação financeira, 
+                  porém não temos parcerias comerciais com os autores ou editoras mencionados.
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                {paidBookRecommendations.map((book, index) => (
+                  <Card key={index} className="p-4 bg-white dark:bg-slate-600/80 border-gray-200 dark:border-slate-500/50">
+                    <h3 className="font-medium mb-2 text-finance-dark dark:text-white">{book.title}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">{book.description}</p>
+                  </Card>
+                ))}
+              </div>
+              
+              <div className="flex justify-center mt-2">
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Livros recomendados disponíveis em livrarias físicas e online
+                </p>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
 
           <div className="bg-green-50 dark:bg-slate-700/60 p-4 md:p-6 rounded-lg border border-green-100 dark:border-slate-500/50">
             <div className="flex items-center gap-2 mb-4">
