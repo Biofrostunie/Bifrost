@@ -141,7 +141,7 @@ const FinancialEducation = () => {
     return `${sign}${value.toFixed(2)}% hoje`;
   };
 
-  const selicAnnual = rates.selic !== undefined ? (rates.selic * 252) : undefined;
+  const selicAnnual = rates.selic !== undefined ? rates.selic : undefined;
   const ipcaAnnual = rates.ipca;
   const cdiAnnual = rates.cdi !== undefined ? (rates.cdi * 252) : undefined;
 
