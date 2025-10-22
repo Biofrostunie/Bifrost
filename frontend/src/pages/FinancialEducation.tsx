@@ -97,8 +97,8 @@ const FinancialEducation = () => {
     const fetchRates = async () => {
       try {
         setLoading(true);
-        const response = await apiFetch("/investment-rates");
-        const data = await response.json();
+        const resp = await apiFetch<{ success: boolean; data: any[] }>("/investment-rates");
+        const data = resp?.data ?? [];
 
         const mapRates: Record<string, number> = {};
         const mapChanges: Record<string, number> = {};
