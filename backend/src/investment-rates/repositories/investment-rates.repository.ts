@@ -32,21 +32,28 @@ export class InvestmentRatesRepository {
 
       // Pega o último valor da série
       const latestData = data[data.length - 1] as BCBResponse;
+      const prevData = data.length > 1 ? (data[data.length - 2] as BCBResponse) : undefined;
       const { valor, data: date } = latestData;
       
-      // Converte o valor para número (a API retorna como string)
+      // Converte os valores para número (a API retorna como string)
       const numericValue = parseFloat(valor);
+      const prevNumericValue = prevData ? parseFloat(prevData.valor) : undefined;
       
       if (isNaN(numericValue)) {
         throw new Error(`Valor inválido para ${rateType}: ${valor}`);
       }
 
-      this.logger.debug(`Taxa ${rateType} obtida: ${numericValue} em ${date}`);
+      const change = prevNumericValue !== undefined && !isNaN(prevNumericValue)
+        ? Number((numericValue - prevNumericValue).toFixed(6))
+        : 0;
+
+      this.logger.debug(`Taxa ${rateType} obtida: ${numericValue} em ${date} (Δ ${change})`);
       
       return { 
         rateType, 
         value: numericValue, 
-        date 
+        date,
+        change,
       };
     } catch (error: unknown) {
       this.logger.error(`Erro ao buscar taxa ${rateType}:`, error);

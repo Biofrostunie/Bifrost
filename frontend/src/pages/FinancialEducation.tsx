@@ -33,7 +33,7 @@ const FinancialEducation = () => {
   const bookRecommendations = [
     {
       title: "Viver de Dividendos",
-      description: "Aprenda estratégias para construir uma carteira de investimentos focada em dividendos",
+      description: "Aprender estratégias para construir uma carteira de investimentos focada em dividendos",
       url: "https://www.infomoney.com.br/conteudos/ebooks/viver-de-dividendos/",
       provider: "InfoMoney",
       type: "E-book"
@@ -89,6 +89,7 @@ const FinancialEducation = () => {
 
   // Estado de taxas (dinâmico via API)
   const [rates, setRates] = useState<Record<string, number>>({});
+  const [changes, setChanges] = useState<Record<string, number>>({});
   const [loadingRates, setLoadingRates] = useState(false);
   const [errorRates, setErrorRates] = useState<string | null>(null);
 
@@ -96,12 +97,15 @@ const FinancialEducation = () => {
     setLoadingRates(true);
     apiFetch<any>("/investment-rates")
       .then((res) => {
-        const payload = (res?.data?.data ?? res?.data ?? []) as Array<{ rateType: string; value: number }>;
-        const map: Record<string, number> = {};
+        const payload = (res?.data?.data ?? res?.data ?? []) as Array<{ rateType: string; value: number; change?: number }>;
+        const mapValues: Record<string, number> = {};
+        const mapChanges: Record<string, number> = {};
         for (const r of payload) {
-          map[r.rateType] = Number(r.value);
+          mapValues[r.rateType] = Number(r.value);
+          mapChanges[r.rateType] = Number(r.change ?? 0);
         }
-        setRates(map);
+        setRates(mapValues);
+        setChanges(mapChanges);
       })
       .catch((err) => {
         setErrorRates(err?.message || "Erro ao carregar taxas");
@@ -111,6 +115,13 @@ const FinancialEducation = () => {
 
   // Formatadores
   const formatPct = (v?: number) => (v === undefined ? (loadingRates ? "..." : "—") : `${v.toFixed(2)}%`);
+  const formatDelta = (d?: number) => {
+    if (d === undefined) return loadingRates ? "..." : "—";
+    const sign = d >= 0 ? "+" : "";
+    // CDI diário pode ser muito pequeno; usamos até 4 casas quando necessário
+    const digits = Math.abs(d) < 0.1 ? 4 : 2;
+    return `${sign}${d.toFixed(digits)}`;
+  };
   // CDI anualizado a partir da taxa diária (aprox. 252 dias úteis)
   const cdiAnnual = rates.cdi !== undefined ? ((Math.pow(1 + (rates.cdi / 100), 252) - 1) * 100) : undefined;
 
@@ -134,22 +145,22 @@ const FinancialEducation = () => {
           <FinancialIndicator
             title="Taxa Selic"
             value={formatPct(rates.selic)}
-            change={errorRates ? "—" : "+0.0"}
-            isPositive={!errorRates}
+            change={formatDelta(changes.selic)}
+            isPositive={(changes.selic ?? 0) >= 0}
             description="Taxa básica de juros da economia"
           />
           <FinancialIndicator
             title="IPCA (12m)"
             value={formatPct(rates.ipca)}
-            change={errorRates ? "—" : "0.0"}
-            isPositive={true}
+            change={formatDelta(changes.ipca)}
+            isPositive={(changes.ipca ?? 0) >= 0}
             description="Índice oficial de inflação"
           />
           <FinancialIndicator
             title="CDI"
             value={formatPct(cdiAnnual)}
-            change={errorRates ? "—" : "+0.0"}
-            isPositive={!errorRates}
+            change={formatDelta(changes.cdi)}
+            isPositive={(changes.cdi ?? 0) >= 0}
             description="Certificado de Depósito Interbancário"
           />
         </div>
