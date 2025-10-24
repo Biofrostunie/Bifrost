@@ -1,7 +1,7 @@
 import { IsOptional, IsDateString, IsString, IsBoolean, IsUUID, IsEnum } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type, Transform } from 'class-transformer';
-import { PaymentMethod } from '@prisma/client';
+import { PaymentMethod } from '@/common/enums/payment-method.enum';
 
 export class GetExpensesQueryDto {
   @ApiPropertyOptional({ 

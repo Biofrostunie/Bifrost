@@ -7,7 +7,7 @@ import { PdfService, ExpenseReportData } from '../../common/services/pdf.service
 import { UsersService } from '../../users/services/users.service';
 import { CacheService } from '../../redis/cache.service';
 import { Cache } from '../../redis/decorators/cache.decorator';
-import { PaymentMethod } from '@prisma/client';
+import { PaymentMethod } from '@/common/enums/payment-method.enum';
 
 @Injectable()
 export class ExpensesService {
@@ -292,7 +292,13 @@ export class ExpensesService {
 
   private convertToNumber(value: any): number {
     if (typeof value === 'number') return value;
-    if (typeof value === 'string') return parseFloat(value);
+    if (typeof value === 'string') {
+      const parsed = parseFloat(value);
+      if (Number.isNaN(parsed)) {
+        throw new Error(`Invalid amount value: ${value}`);
+      }
+      return parsed;
+    }
     if (value && typeof value === 'object' && 'toNumber' in value) return value.toNumber();
     throw new Error(`Cannot convert value to number: ${value}`);
   }
