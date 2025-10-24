@@ -206,8 +206,6 @@ npm i
 npm run dev
 ```
 
-Nota (Windows): se scripts `npm` estiverem bloqueados pela política de execução do PowerShell, inicie o servidor com `node node_modules/vite/bin/vite.js --port 8080`.
-
 ## Build e Deploy
 
 Para construir a aplicação para produção:
@@ -227,3 +225,14 @@ npm run preview
 3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
 4. Push para a branch (`git push origin feature/nova-feature`)
 5. Abra um Pull Request
+
+## Atualizações Recentes
+
+- Corrigida a chamada de `apiFetch` em `FinancialEducation.tsx`, removendo o uso incorreto de `.json()`.
+- Tratado “duplo envelope” de resposta (`success`/`data` + interceptor), garantindo iteração segura: `resp.data` ou `resp.data.data`.
+- Resolvido `TypeError: w is not iterable` ao processar taxas de investimentos.
+- Padronizada a topbar da página de Educação Financeira com `AppLayout` e título "Educação Financeira".
+- Restaurados aliases de importação para `@/...` evitando caminhos absolutos `/src/...`.
+- Ajustada a exibição da SELIC: uso da série 4189 (SELIC Meta, anual), sem multiplicação por 252; CDI segue anualizado por 252.
+- Validação em preview local `http://localhost:8080/` com Vite.
+- Workaround para Windows com políticas de execução: iniciar dev server via `node node_modules/vite/bin/vite.js --port 8080` quando `npm` estiver bloqueado.

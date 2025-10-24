@@ -28,7 +28,14 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
     try {
       const token = localStorage.getItem('token');
       const data = await apiFetch('/expenses', { token });
-      set({ expenses: data.data ?? [], loading: false });
+      const raw = data?.data ?? [];
+      const normalized: Expense[] = Array.isArray(raw)
+        ? raw.map((e: any) => ({
+            ...e,
+            amount: typeof e?.amount === 'number' ? e.amount : parseFloat(e?.amount ?? '0')
+          }))
+        : [];
+      set({ expenses: normalized, loading: false });
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Erro ao carregar despesas', loading: false });
       throw error;
@@ -47,7 +54,11 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
         body: JSON.stringify(expenseData)
       });
 
-      const newExpense: Expense = data.data;
+      const created = data?.data;
+      const newExpense: Expense = {
+        ...created,
+        amount: typeof created?.amount === 'number' ? created.amount : parseFloat(created?.amount ?? '0'),
+      };
       set({ expenses: [...get().expenses, newExpense], loading: false });
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Erro ao adicionar despesa', loading: false });
