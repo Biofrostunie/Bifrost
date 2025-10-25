@@ -13,7 +13,7 @@ import {
   HttpStatus,
   Logger,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiQuery, ApiBody } from '@nestjs/swagger';
 import { Response } from 'express';
 
 import { ExpensesService } from '../services/expenses.service';
@@ -221,8 +221,50 @@ export class ExpensesController {
     }
   }
 
-  @ApiOperation({ summary: 'Create new expense' })
+  @ApiOperation({ 
+    summary: 'Create new expense',
+    description: 'Supports linking expenses to bank accounts or credit cards via paymentMethod. When paymentMethod is CREDIT_CARD, creditCardId is required. When paymentMethod is BANK_ACCOUNT, bankAccountId is required.'
+  })
   @ApiResponse({ status: 201, description: 'Expense created successfully' })
+  @ApiResponse({ status: 400, description: 'Validation error: missing bankAccountId or creditCardId based on paymentMethod' })
+  @ApiBody({
+    type: CreateExpenseDto,
+    examples: {
+      cashExpense: {
+        summary: 'Cash expense',
+        value: {
+          description: 'Lunch',
+          amount: 42.5,
+          category: 'Food',
+          date: '2024-01-15',
+          essential: false,
+          paymentMethod: 'CASH'
+        },
+      },
+      bankExpense: {
+        summary: 'Bank account expense',
+        value: {
+          description: 'Electricity bill',
+          amount: 120.0,
+          category: 'Utilities',
+          date: '2024-02-10',
+          paymentMethod: 'BANK_ACCOUNT',
+          bankAccountId: '4c1b265b-2f35-4f0e-8f26-7a1e2d0e9c90'
+        },
+      },
+      cardExpense: {
+        summary: 'Credit card expense',
+        value: {
+          description: 'Online purchase',
+          amount: 199.99,
+          category: 'Shopping',
+          date: '2024-03-05',
+          paymentMethod: 'CREDIT_CARD',
+          creditCardId: 'a8e6b2f9-12cd-4f33-9d44-5b2e7a1c3e11'
+        },
+      },
+    },
+  })
   @Post()
   async createExpense(
     @CurrentUser() user: CurrentUserType,
@@ -242,9 +284,30 @@ export class ExpensesController {
     return this.expensesService.getExpenseById(user.id, id);
   }
 
-  @ApiOperation({ summary: 'Update expense' })
+  @ApiOperation({ 
+    summary: 'Update expense',
+    description: 'Partially updates an expense. If changing paymentMethod to CREDIT_CARD, provide creditCardId; if BANK_ACCOUNT, provide bankAccountId.'
+  })
   @ApiResponse({ status: 200, description: 'Expense updated successfully' })
   @ApiResponse({ status: 404, description: 'Expense not found' })
+  @ApiResponse({ status: 400, description: 'Validation error: missing bankAccountId or creditCardId based on paymentMethod' })
+  @ApiBody({
+    type: UpdateExpenseDto,
+    examples: {
+      updateAmount: {
+        summary: 'Update amount only',
+        value: { amount: 75.0 },
+      },
+      updateToCard: {
+        summary: 'Change to credit card payment',
+        value: { paymentMethod: 'CREDIT_CARD', creditCardId: 'a8e6b2f9-12cd-4f33-9d44-5b2e7a1c3e11' },
+      },
+      updateToBank: {
+        summary: 'Change to bank account payment',
+        value: { paymentMethod: 'BANK_ACCOUNT', bankAccountId: '4c1b265b-2f35-4f0e-8f26-7a1e2d0e9c90' },
+      },
+    },
+  })
   @Put(':id')
   async updateExpense(
     @CurrentUser() user: CurrentUserType,

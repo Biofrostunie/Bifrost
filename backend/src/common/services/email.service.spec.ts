@@ -104,7 +104,7 @@ describe('EmailService', () => {
       await service.sendVerificationEmail('test@example.com', 'Test User', 'test-token');
 
       const callArgs = mockTransporter.sendMail.mock.calls[0][0];
-      expect(callArgs.html).toContain('http://localhost:8080/verify-email?token=test-token');
+      expect(callArgs.html).toContain('http://localhost:80/verify-email?token=test-token');
     });
 
     it('should handle missing user name', async () => {

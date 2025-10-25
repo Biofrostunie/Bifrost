@@ -34,6 +34,7 @@ docker-compose up -d
 - [Segurança](#-segurança)
 - [Configuração de E-mail](#-configuração-de-e-mail)
 - [Geração de PDF](#-geração-de-pdf)
+- [Despesas: Métodos de Pagamento e Vinculação](#-despesas-métodos-de-pagamento-e-vinculação)
 - [Deploy em Produção](#-deploy-em-produção)
 - [Contribuição](#-contribuição)
 - [Licença](#-licença)
@@ -394,6 +395,78 @@ FRONTEND_URL="http://192.168.0.132:8080"
 - Templates HTML responsivos
 - Gráficos e estatísticas
 - Download via endpoint REST ou tRPC (base64)
+
+---
+
+## 💳 Despesas: Métodos de Pagamento e Vinculação
+
+### **PaymentMethod**
+- Enum suportado: `CASH`, `BANK_ACCOUNT`, `CREDIT_CARD`, `OTHER`
+- Regras de validação:
+  - Se `paymentMethod = CREDIT_CARD`, `creditCardId` é obrigatório
+  - Se `paymentMethod = BANK_ACCOUNT`, `bankAccountId` é obrigatório
+
+### **Exemplos de Uso (cURL)**
+
+Criar despesa em dinheiro:
+```bash
+curl -X POST "http://localhost:3000/api/expenses" \
+  -H "Authorization: Bearer <JWT>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "description": "Almoço",
+    "amount": 42.5,
+    "category": "Food",
+    "date": "2024-01-15",
+    "paymentMethod": "CASH"
+  }'
+```
+
+Criar despesa vinculada a conta bancária:
+```bash
+curl -X POST "http://localhost:3000/api/expenses" \
+  -H "Authorization: Bearer <JWT>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "description": "Conta de luz",
+    "amount": 120.0,
+    "category": "Utilities",
+    "date": "2024-02-10",
+    "paymentMethod": "BANK_ACCOUNT",
+    "bankAccountId": "4c1b265b-2f35-4f0e-8f26-7a1e2d0e9c90"
+  }'
+```
+
+Criar despesa vinculada a cartão de crédito:
+```bash
+curl -X POST "http://localhost:3000/api/expenses" \
+  -H "Authorization: Bearer <JWT>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "description": "Compra online",
+    "amount": 199.99,
+    "category": "Shopping",
+    "date": "2024-03-05",
+    "paymentMethod": "CREDIT_CARD",
+    "creditCardId": "a8e6b2f9-12cd-4f33-9d44-5b2e7a1c3e11"
+  }'
+```
+
+Atualizar despesa para cartão de crédito:
+```bash
+curl -X PUT "http://localhost:3000/api/expenses/<expense-id>" \
+  -H "Authorization: Bearer <JWT>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "paymentMethod": "CREDIT_CARD",
+    "creditCardId": "a8e6b2f9-12cd-4f33-9d44-5b2e7a1c3e11"
+  }'
+```
+
+### **Swagger**
+- Endpoints de despesas agora trazem **exemplos** de requisições para `CASH`, `BANK_ACCOUNT` e `CREDIT_CARD`
+- Mensagens de validação claras quando `creditCardId`/`bankAccountId` são obrigatórios
+- Acesse: `http://localhost:3000/api` → seção **Expenses**
 
 ---
 

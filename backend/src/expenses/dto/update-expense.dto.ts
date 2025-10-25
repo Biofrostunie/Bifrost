@@ -1,6 +1,7 @@
-import { IsString, IsNumber, IsBoolean, IsDateString, IsOptional, Min } from 'class-validator';
+import { IsString, IsNumber, IsBoolean, IsDateString, IsOptional, Min, IsUUID, IsEnum } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
+import { PaymentMethod } from '@/common/enums/payment-method.enum';
 
 export class UpdateExpenseDto {
   @ApiPropertyOptional({ description: 'Expense description' })
@@ -34,4 +35,19 @@ export class UpdateExpenseDto {
   @IsOptional()
   @IsString()
   notes?: string;
+
+  @ApiPropertyOptional({ description: 'Payment method', enum: PaymentMethod })
+  @IsOptional()
+  @IsEnum(PaymentMethod)
+  paymentMethod?: PaymentMethod;
+
+  @ApiPropertyOptional({ description: 'Associated bank account ID when applicable' })
+  @IsOptional()
+  @IsUUID()
+  bankAccountId?: string;
+
+  @ApiPropertyOptional({ description: 'Associated credit card ID when applicable' })
+  @IsOptional()
+  @IsUUID()
+  creditCardId?: string;
 }

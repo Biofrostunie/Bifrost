@@ -12,7 +12,7 @@ const AppDataSource = new DataSource({
     logging: false,
 });
 
-async function seed() {
+export async function seedUsers() {
     await AppDataSource.initialize();
     const queryRunner = AppDataSource.createQueryRunner();
 
@@ -167,7 +167,7 @@ async function seed() {
                 const concept = faker.helpers.arrayElement(concepts);
                 const type = faker.helpers.arrayElement(['view','like','complete']);
                 const key = `${user.id}-${concept.id}-${type}`;
-                if (usedInteractions.has(key)) continue; // evita duplicados
+                if (usedInteractions.has(key)) continue;
                 usedInteractions.add(key);
 
                 await queryRunner.query(
@@ -207,5 +207,3 @@ async function seed() {
         await AppDataSource.destroy();
     }
 }
-
-seed();

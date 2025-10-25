@@ -120,7 +120,7 @@ bifrost/
 - **CreateAccount**: Registro de novos usuários
 - **PasswordRecovery**: Recuperação de senha
 - **Home**: Dashboard principal
-- **FinancialEducation**: Página de educação financeira
+- **FinancialEducation**: Página de educação financeira (topbar padrão com `AppLayout` e título; exibe indicadores SELIC/IPCA/CDI via `FinancialIndicator`)
 - **ExpenseCalculator**: Calculadora de despesas
 - **InvestmentCalculator**: Simulador de investimentos
 - **KnowledgeBase**: Base de conhecimento financeiro
@@ -150,6 +150,9 @@ bifrost/
 3. **Educação Financeira**:
 
    - Carregamento de conceitos -> Filtro/Busca -> Exibição de detalhes
+   - Indicadores de mercado: consumo de taxas via `apiFetch('/investment-rates')`
+   - Respostas com envelope `{ success, data }`; não usar `.json()`; usar `resp.data` (ou `resp.data.data`)
+   - Unidades: SELIC anual (série 4189), CDI diário anualizado por `252`
 
 4. **Simulação de Investimentos**:
    - Input de parâmetros -> Cálculos -> Geração de gráficos -> Exibição de resultados
@@ -222,3 +225,14 @@ npm run preview
 3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`)
 4. Push para a branch (`git push origin feature/nova-feature`)
 5. Abra um Pull Request
+
+## Atualizações Recentes
+
+- Corrigida a chamada de `apiFetch` em `FinancialEducation.tsx`, removendo o uso incorreto de `.json()`.
+- Tratado “duplo envelope” de resposta (`success`/`data` + interceptor), garantindo iteração segura: `resp.data` ou `resp.data.data`.
+- Resolvido `TypeError: w is not iterable` ao processar taxas de investimentos.
+- Padronizada a topbar da página de Educação Financeira com `AppLayout` e título "Educação Financeira".
+- Restaurados aliases de importação para `@/...` evitando caminhos absolutos `/src/...`.
+- Ajustada a exibição da SELIC: uso da série 4189 (SELIC Meta, anual), sem multiplicação por 252; CDI segue anualizado por 252.
+- Validação em preview local `http://localhost:8080/` com Vite.
+- Workaround para Windows com políticas de execução: iniciar dev server via `node node_modules/vite/bin/vite.js --port 8080` quando `npm` estiver bloqueado.

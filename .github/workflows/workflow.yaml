@@ -1,0 +1,47 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ main, development ]
+  pull_request:
+    branches: [ main, development ]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Verify Docker Version
+        run: |
+          docker --version
+          docker compose version
+
+      - name: Run Backend with Docker Compose
+        working-directory: ./backend
+        run: |
+          docker compose up -d
+          sleep 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        working-directory: ./backend
+        run: npm install
+
+      - name: Run Tests
+        working-directory: ./backend
+        run: |
+          set -e
+          npm run test
+
+      - name: Stop and Remove Containers
+        if: always()
+        working-directory: ./backend
+        run: docker compose down

@@ -78,6 +78,11 @@ async function bootstrap() {
   // Global prefix
   app.setGlobalPrefix('api');
 
+  // Resolve backend base URL from env (no trailing slash)
+  const port = configService.get('PORT') || 3000;
+  const rawBackendUrl = configService.get<string>('BACKEND_URL');
+  const backendBaseUrl = (rawBackendUrl?.replace(/\/+$/,'')) || `http://localhost:${port}`;
+
   // Health check endpoint with Redis status
   app.getHttpAdapter().get('/api/health', async (req: Request, res: Response) => {
     const redisService = app.get(RedisService);
@@ -115,6 +120,22 @@ async function bootstrap() {
     });
   });
 
+  // Base API endpoint for versioned root (useful for health/UI checks)
+  app.getHttpAdapter().get('/api/v1', async (req: Request, res: Response) => {
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      message: 'Bifröst API base. Use specific endpoints like /api/v1/auth/register',
+      availableEndpoints: [
+        '/api/v1/auth/register',
+        '/api/v1/auth/login',
+        '/api/v1/users/profile',
+        '/api/v1/expenses',
+        '/api/health'
+      ],
+    });
+  });
+
   // Swagger documentation
   const config = new DocumentBuilder()
     .setTitle('Bifröst Education Platform API')
@@ -126,8 +147,7 @@ async function bootstrap() {
       'noreplybifrost@gmail.com'
     )
     .setLicense('MIT', 'https://opensource.org/licenses/MIT')
-    .addServer('http://localhost:3000', 'Development server')
-    .addServer('https://api.bifrost.com', 'Production server')
+    .addServer(backendBaseUrl, 'Server')
     .addBearerAuth(
       {
         type: 'http',
@@ -159,12 +179,11 @@ async function bootstrap() {
     customSiteTitle: 'Bifröst API Documentation',
   });
 
-  const port = configService.get('PORT') || 3000;
   await app.listen(port);
 
-  logger.log(`🚀 Application is running on: http://localhost:${port}`);
-  logger.log(`📚 API Documentation: http://localhost:${port}/api`);
-  logger.log(`🔧 tRPC Endpoint: http://localhost:${port}/trpc`);
+  logger.log(`🚀 Application is running on: ${backendBaseUrl}`);
+  logger.log(`📚 API Documentation: ${backendBaseUrl}/api`);
+  logger.log(`🔧 tRPC Endpoint: ${backendBaseUrl}/trpc`);
   logger.log(`📊 Database: PostgreSQL with Prisma ORM`);
   logger.log(`🔴 Cache: Redis for caching and sessions`);
   logger.log(`🔐 Authentication: JWT with Passport.js`);

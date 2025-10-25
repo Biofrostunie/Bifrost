@@ -83,7 +83,8 @@ services:
       SMTP_PASS: qfchctnvfmyulonn
       EMAIL_FROM: noreplybifrost@gmail.com
       EMAIL_FROM_NAME: Bifröst Education Platform
-      FRONTEND_URL: http://localhost:80
+      FRONTEND_URL: ${FRONTEND_PUBLIC_URL:-http://localhost:80}
+      BACKEND_URL: ${BACKEND_PUBLIC_URL:-http://localhost:3000}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: senha-forte-confia
@@ -124,7 +125,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: http://localhost:3000/api/v1
+        VITE_API_URL: ${VITE_API_URL:-/api/v1}
     container_name: financial_education_frontend
     restart: unless-stopped
     ports:

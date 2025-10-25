@@ -5,7 +5,7 @@ module.exports = {
   rootDir: '.',
   testRegex: '.*\\.spec\\.ts$',
   transform: {
-    '^.+\\.(t|j)s$': 'ts-jest',
+    '^.+\\.(t|j)s$': ['ts-jest', { useESM: false }],
   },
   collectCoverageFrom: [
     'src/**/*.(t|j)s',
@@ -32,7 +32,7 @@ module.exports = {
       statements: 80,
     },
   },
-  moduleNameMapping: {
+  moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@/auth/(.*)$': '<rootDir>/src/auth/$1',
     '^@/users/(.*)$': '<rootDir>/src/users/$1',
@@ -53,11 +53,7 @@ module.exports = {
   resetMocks: true,
   restoreMocks: true,
   // Configurações específicas para mocks
-  globals: {
-    'ts-jest': {
-      useESM: false,
-    },
-  },
+
   // Configuração para ignorar warnings de deprecação
   testEnvironmentOptions: {
     NODE_ENV: 'test',

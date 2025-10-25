@@ -26,6 +26,10 @@ export class GetRatesResponseDto {
           type: 'string',
           format: 'date',
           description: 'Date when the rate was last updated'
+        },
+        change: {
+          type: 'number',
+          description: 'Delta versus previous record (daily or previous datapoint)'
         }
       }
     }
@@ -34,5 +38,6 @@ export class GetRatesResponseDto {
     rateType: string;
     value: number;
     date: string;
+    change: number;
   }>;
 }

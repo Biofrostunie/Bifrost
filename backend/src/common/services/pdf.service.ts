@@ -2,17 +2,26 @@ import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import * as puppeteer from 'puppeteer';
 import * as handlebars from 'handlebars';
 import * as moment from 'moment';
-import { Expense } from '@prisma/client';
+import { PrismaService } from '../../prisma/prisma.service';
 import { CacheService } from '../../redis/cache.service';
 
 export interface ExpenseReportData {
-  expenses: (Expense & {
+  expenses: {
+    id: string;
+    userId: string;
+    description: string;
+    amount: number;
+    category: string;
+    date: Date;
+    essential: boolean;
+    notes?: string;
+    createdAt: Date;
     user?: {
       id: string;
       email: string;
       fullName: string;
     };
-  })[];
+  }[];
   totalAmount: number;
   period: {
     startDate: string;
@@ -1074,11 +1083,11 @@ export class PdfService implements OnModuleDestroy {
   private prepareEssentialChartData(expenses: ExpenseReportData['expenses']) {
     const essentialTotal = expenses
       .filter(exp => exp.essential)
-      .reduce((sum, exp) => sum + (typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount.toString())), 0);
+      .reduce((sum, exp) => sum + (typeof exp.amount === 'number' ? exp.amount : parseFloat(String(exp.amount))), 0);
     
     const nonEssentialTotal = expenses
       .filter(exp => !exp.essential)
-      .reduce((sum, exp) => sum + (typeof exp.amount === 'number' ? exp.amount : parseFloat(exp.amount.toString())), 0);
+      .reduce((sum, exp) => sum + (typeof exp.amount === 'number' ? exp.amount : parseFloat(String(exp.amount))), 0);
 
     const data = [];
     const labels = [];

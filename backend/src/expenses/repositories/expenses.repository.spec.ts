@@ -100,6 +100,11 @@ describe('ExpensesRepository', () => {
 
       expect(prisma.expense.findUnique).toHaveBeenCalledWith({
         where: { id: 'expense-id' },
+        include: {
+          user: { select: { id: true, email: true, fullName: true } },
+          bankAccount: { select: { id: true, alias: true, bankName: true } },
+          creditCard: { select: { id: true, alias: true, brand: true } },
+        },
       });
       expect(result).toEqual(mockExpense);
     });
@@ -131,6 +136,8 @@ describe('ExpensesRepository', () => {
               fullName: true,
             },
           },
+          bankAccount: { select: { id: true, alias: true, bankName: true } },
+          creditCard: { select: { id: true, alias: true, brand: true } },
         },
       });
       expect(result).toEqual(expenses);
@@ -163,6 +170,8 @@ describe('ExpensesRepository', () => {
               fullName: true,
             },
           },
+          bankAccount: { select: { id: true, alias: true, bankName: true } },
+          creditCard: { select: { id: true, alias: true, brand: true } },
         },
       });
     });
@@ -191,6 +200,8 @@ describe('ExpensesRepository', () => {
               fullName: true,
             },
           },
+          bankAccount: { select: { id: true, alias: true, bankName: true } },
+          creditCard: { select: { id: true, alias: true, brand: true } },
         },
       });
     });
@@ -216,6 +227,8 @@ describe('ExpensesRepository', () => {
               fullName: true,
             },
           },
+          bankAccount: { select: { id: true, alias: true, bankName: true } },
+          creditCard: { select: { id: true, alias: true, brand: true } },
         },
       });
     });
@@ -254,6 +267,8 @@ describe('ExpensesRepository', () => {
               fullName: true,
             },
           },
+          bankAccount: { select: { id: true, alias: true, bankName: true } },
+          creditCard: { select: { id: true, alias: true, brand: true } },
         },
       });
     });
@@ -276,11 +291,16 @@ describe('ExpensesRepository', () => {
 
       const result = await repository.update('expense-id', updateData);
 
-      expect(prisma.expense.update).toHaveBeenCalledWith({
+      expect(prisma.expense.update as jest.Mock).toHaveBeenCalledWith({
         where: { id: 'expense-id' },
         data: {
           description: 'Updated Expense',
           amount: new Decimal(150),
+        },
+        include: {
+          user: { select: { id: true, email: true, fullName: true } },
+          bankAccount: { select: { id: true, alias: true, bankName: true } },
+          creditCard: { select: { id: true, alias: true, brand: true } },
         },
       });
       expect(result).toEqual(updatedExpense);
@@ -295,10 +315,15 @@ describe('ExpensesRepository', () => {
 
       await repository.update('expense-id', updateData);
 
-      expect(prisma.expense.update).toHaveBeenCalledWith({
+      expect(prisma.expense.update as jest.Mock).toHaveBeenCalledWith({
         where: { id: 'expense-id' },
         data: {
           date: new Date('2024-02-01'),
+        },
+        include: {
+          user: { select: { id: true, email: true, fullName: true } },
+          bankAccount: { select: { id: true, alias: true, bankName: true } },
+          creditCard: { select: { id: true, alias: true, brand: true } },
         },
       });
     });

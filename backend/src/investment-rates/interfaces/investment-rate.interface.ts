@@ -4,6 +4,8 @@ export interface InvestmentRate {
   rateType: RateType;
   value: number;
   date: string;
+  // Variação em relação ao ponto anterior (dia/registro anterior)
+  change: number;
 }
 
 export interface InvestmentRatesResponse {
@@ -21,4 +23,4 @@ export interface SeriesConfig {
   name: string;
   description: string;
   requiresDateRange: boolean;
-} 
+}
