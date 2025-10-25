@@ -378,4 +378,4 @@ npm run test:load
 
 ---
 
-Desenvolvido como Trabalho de Conclusão de Curso (TCC) na PUCRS.
+Desenvolvido como Projeto Final de Curso (PFC) na UniEVANGÉLICA.
