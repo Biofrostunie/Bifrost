@@ -47,7 +47,7 @@ const ExpenseList = ({ expenses, onRemoveExpense }: ExpenseListProps) => {
     <div className="space-y-4">
       {expenses.map((expense) => (
         <Card key={expense.id} className="p-4">
-          <div className="flex justify-between">
+          <div className="flex flex-col md:flex-row md:justify-between gap-3">
             <div>
               <div className="flex items-center">
                 <h3 className="font-medium">{expense.description}</h3>
@@ -78,7 +78,7 @@ const ExpenseList = ({ expenses, onRemoveExpense }: ExpenseListProps) => {
               </div>
             </div>
             
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 md:self-center">
               <span className="font-semibold">{formatCurrency(expense.amount)}</span>
               <Button
                 variant="ghost"

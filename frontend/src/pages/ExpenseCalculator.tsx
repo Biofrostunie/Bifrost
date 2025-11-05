@@ -73,25 +73,27 @@ const ExpenseCalculator = () => {
 
   return (
     <AppLayout title="Calculadora de Gastos">
-      <div className="max-w-7xl mx-auto p-6 min-h-screen">
-        <div className="flex justify-between items-center mb-6">
+      <div className="w-full p-4 md:p-6">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-6">
           <h1 className="text-2xl font-bold text-finance-dark dark:text-white">
             Calculadora de Gastos
           </h1>
           {expenses.length > 0 && (
-            <ReportGenerator expenses={expenses} />
+            <div className="self-start md:self-auto">
+              <ReportGenerator expenses={expenses} />
+            </div>
           )}
         </div>
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-start">
           {/* Left Column - Form and List */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white dark:bg-slate-700/60 rounded-lg p-6 border border-gray-200 dark:border-slate-500/50">
+            <div className="bg-white dark:bg-slate-700/60 rounded-lg p-4 md:p-6 border border-gray-200 dark:border-slate-500/50">
               <ExpenseForm onAddExpense={handleAddExpense} />
             </div>
             
             {expenses.length > 0 && (
-              <div className="bg-white dark:bg-slate-700/60 rounded-lg p-6 border border-gray-200 dark:border-slate-500/50">
+              <div className="bg-white dark:bg-slate-700/60 rounded-lg p-4 md:p-6 border border-gray-200 dark:border-slate-500/50">
                 <ExpenseList expenses={currentExpenses} onRemoveExpense={removeExpense} />
                 
                 {/* Pagination */}

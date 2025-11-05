@@ -22,14 +22,13 @@ const ConceptFilter: React.FC<ConceptFilterProps> = ({
     { id: "debt", label: "Passivo"}
   ];
   
-  // Only show filters that have at least one concept
   const availableFilters = filters.filter(filter => {
     if (filter.id === "all") return true;
     return concepts.some(concept => concept.type === filter.id);
   });
 
   return (
-    <div className="flex flex-wrap gap-2 mb-6">
+    <div className="flex flex-wrap gap-2 mb-2 w-full">
       {availableFilters.map((filter) => (
         <Button
           key={filter.id}
