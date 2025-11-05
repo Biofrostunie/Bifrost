@@ -8,9 +8,10 @@ export const BottomNavigation = () => {
   const isActive = (path: string) => currentPath === path;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-2 pb-[env(safe-area-inset-bottom)] flex justify-around items-center shadow-sm z-50">
+    <div data-tutorial="mobile-nav" className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-2 pb-[env(safe-area-inset-bottom)] flex justify-around items-center shadow-sm z-50">
       <Link
         to="/"
+        data-tutorial="mobile-home"
         className={`flex flex-col items-center p-2 rounded-lg transition-all duration-200 ${
           isActive("/") 
             ? "text-finance-blue bg-finance-blue/10" 
@@ -22,6 +23,7 @@ export const BottomNavigation = () => {
       </Link>
       <Link
         to="/calculadora"
+        data-tutorial="mobile-expense"
         className={`flex flex-col items-center p-2 rounded-lg transition-all duration-200 ${
           isActive("/calculadora") 
             ? "text-finance-blue bg-finance-blue/10" 
@@ -33,6 +35,7 @@ export const BottomNavigation = () => {
       </Link>
       <Link
         to="/investimentos"
+        data-tutorial="mobile-investment"
         className={`flex flex-col items-center p-2 rounded-lg transition-all duration-200 ${
           isActive("/investimentos") 
             ? "text-finance-teal bg-finance-teal/10" 
@@ -44,6 +47,7 @@ export const BottomNavigation = () => {
       </Link>
       <Link
         to="/educacao"
+        data-tutorial="mobile-education"
         className={`flex flex-col items-center p-2 rounded-lg transition-all duration-200 ${
           isActive("/educacao") 
             ? "text-finance-purple bg-finance-purple/10" 
@@ -55,6 +59,7 @@ export const BottomNavigation = () => {
       </Link>
       <Link
         to="/conhecimento"
+        data-tutorial="mobile-knowledge"
         className={`flex flex-col items-center p-2 rounded-lg transition-all duration-200 ${
           isActive("/conhecimento") 
             ? "text-finance-blue bg-finance-blue/10" 

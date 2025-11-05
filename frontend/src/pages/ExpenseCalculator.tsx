@@ -73,7 +73,7 @@ const ExpenseCalculator = () => {
 
   return (
     <AppLayout title="Calculadora de Gastos">
-      <div className="w-full p-4 md:p-6">
+      <div className="w-full p-4 md:p-6" data-tutorial="expense-calculator">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-6">
           <h1 className="text-2xl font-bold text-finance-dark dark:text-white">
             Calculadora de Gastos

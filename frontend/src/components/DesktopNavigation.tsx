@@ -59,7 +59,7 @@ export function DesktopNavigation() {
   ];
 
   return (
-    <Sidebar className="hidden lg:flex h-screen border-r">
+    <Sidebar className="hidden lg:flex h-screen border-r" data-tutorial="desktop-sidebar">
       <SidebarContent>
         <div className="px-6 py-5 border-b">
           <h2 className="text-xl font-bold text-finance-teal">Bifröst</h2>
@@ -80,6 +80,23 @@ export function DesktopNavigation() {
                             ? "bg-finance-teal/20 text-finance-gray border-l-4 border-finance-teal font-semibold" 
                             : "hover:bg-finance-blue/10 hover:text-finance-blue text-foreground/80"
                         )
+                      }
+                      data-tutorial={
+                        item.path === "/"
+                          ? "sidebar-home"
+                          : item.path === "/calculadora"
+                          ? "sidebar-expense"
+                          : item.path === "/investimentos"
+                          ? "sidebar-investment"
+                          : item.path === "/educacao"
+                          ? "sidebar-education"
+                          : item.path === "/conhecimento"
+                          ? "sidebar-knowledge"
+                          : item.path === "/contas-bancarias/novo"
+                          ? "sidebar-bank-account"
+                          : item.path === "/cartoes/novo"
+                          ? "sidebar-credit-card"
+                          : undefined
                       }
                     >
                       <item.icon className="h-5 w-5" />

@@ -147,7 +147,7 @@ const FinancialEducation = () => {
 
   return (
     <AppLayout title="Educação Financeira">
-      <div className="space-y-4">
+      <div className="space-y-4" data-tutorial="financial-education">
         <div className="bg-blue-50 dark:bg-slate-700/60 p-4 md:p-6 rounded-lg border border-blue-100 dark:border-slate-500/50">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="h-5 w-5 text-finance-blue" />

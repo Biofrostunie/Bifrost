@@ -82,7 +82,7 @@ export default function CreditCardCreate() {
 
   return (
     <AppLayout title="Cartão de Crédito" showProfile>
-      <div className="w-full max-w-2xl mx-auto">
+      <div className="w-full max-w-2xl mx-auto" data-tutorial="credit-card-create">
         <Card className="p-6">
           <div className="mb-6">
             <h1 className="text-2xl font-bold">Cadastrar Cartão de Crédito</h1>
