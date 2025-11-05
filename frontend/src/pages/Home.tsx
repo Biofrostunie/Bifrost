@@ -21,6 +21,7 @@ const Home = () => {
   const [dailyTip, setDailyTip] = useState("");
   const [weeklyTip, setWeeklyTip] = useState("");
   const [monthlyTip, setMonthlyTip] = useState("");
+  // Tutorial agora é montado globalmente em ProtectedRoute
 
   // Novos estados para contas/cartões/expenses
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
@@ -33,12 +34,76 @@ const Home = () => {
     setWeeklyTip(getCurrentTip('weekly').content);
     setMonthlyTip(getCurrentTip('monthly').content);
 
-    // Verificar se é o primeiro login e mostrar popup de perfil de investidor
-    const hasSeenProfileDialog = localStorage.getItem('investor-profile-dialog-seen');
-    const hasCompletedProfile = localStorage.getItem('investor-profile');
+    // Chaves específicas por conta (token)
+    const token = localStorage.getItem('token') || 'anon';
+    const keyId = localStorage.getItem('userEmail') || 'anon';
+    const profileKey = `investor-profile:${keyId}`;
+    const lastReviewKey = `investor-profile-last-reviewed:${keyId}`;
 
-    if (!hasSeenProfileDialog && !hasCompletedProfile) {
-      setTimeout(() => setShowProfileDialog(true), 2000);
+    const monthsSince = (dateStr?: string | null) => {
+      if (!dateStr) return Infinity;
+      const last = new Date(dateStr);
+      const now = new Date();
+      const years = now.getFullYear() - last.getFullYear();
+      const months = now.getMonth() - last.getMonth();
+      const total = years * 12 + months;
+      // Se o dia do mês ainda não passou, ajusta -1
+      if (now.getDate() < last.getDate()) return total - 1;
+      return total;
+    };
+
+    const checkProfileAndPrompt = async () => {
+      try {
+        const apiToken = localStorage.getItem('token');
+        const res = await apiFetch('/users/profile', { token: apiToken });
+        const riskTolerance: string | undefined = res?.data?.profile?.riskTolerance;
+
+        if (riskTolerance) {
+          // Persistir perfil e iniciar/continuar contagem para revalidação
+          localStorage.setItem(profileKey, riskTolerance);
+          const lastReviewed = localStorage.getItem(lastReviewKey);
+          if (!lastReviewed) {
+            localStorage.setItem(lastReviewKey, new Date().toISOString());
+          }
+          const diff = monthsSince(localStorage.getItem(lastReviewKey));
+          if (diff >= 6) {
+            setTimeout(() => setShowProfileDialog(true), 800);
+          }
+        } else {
+          // Sem perfil definido: pedir em todo login/visita ao dashboard
+          setTimeout(() => setShowProfileDialog(true), 800);
+        }
+      } catch {
+        // Fallback local caso a API falhe
+        const localProfile = localStorage.getItem(profileKey);
+        if (!localProfile) {
+          setTimeout(() => setShowProfileDialog(true), 800);
+        } else {
+          const diff = monthsSince(localStorage.getItem(lastReviewKey));
+          if (diff >= 6) {
+            setTimeout(() => setShowProfileDialog(true), 800);
+          }
+        }
+      }
+    };
+
+    // Respeitar conclusão do tutorial para não conflitar com os tooltips
+    const tutorialKey = `app-tutorial-completed:user:${keyId}`;
+    const tutorialCompleted = localStorage.getItem(tutorialKey) === 'true';
+
+    if (tutorialCompleted) {
+      checkProfileAndPrompt();
+    } else {
+      // Poll simples até o tutorial finalizar, então verifica perfil
+      const start = Date.now();
+      const poll = setInterval(() => {
+        const done = localStorage.getItem(tutorialKey) === 'true';
+        const timeout = Date.now() - start > 60000; // 60s de segurança
+        if (done || timeout) {
+          clearInterval(poll);
+          if (done) checkProfileAndPrompt();
+        }
+      }, 1000);
     }
   }, []);
 
@@ -51,8 +116,11 @@ const Home = () => {
   }, []);
 
   const handleProfileComplete = async (profile: string) => {
-    localStorage.setItem('investor-profile', profile);
-    localStorage.setItem('investor-profile-dialog-seen', 'true');
+    const token = localStorage.getItem('token') || 'anon';
+    const profileKey = `investor-profile:${token}`;
+    const lastReviewKey = `investor-profile-last-reviewed:${token}`;
+    localStorage.setItem(profileKey, profile);
+    localStorage.setItem(lastReviewKey, new Date().toISOString());
 
     const riskMap: Record<string, string> = {
       Conservador: 'conservative',
@@ -87,6 +155,7 @@ const Home = () => {
   return (
     <AppLayout title="Dashboard" showProfile>
       <div>
+        {/* Tutorial é renderizado globalmente em ProtectedRoute */}
         {/* Dialog de perfil de investidor e perfil do usuário */}
         <InvestorProfileDialog
           open={showProfileDialog}
@@ -170,13 +239,15 @@ const Home = () => {
 
         <h2 className="text-xl font-semibold mb-4 dark:text-white">Ferramentas Financeiras</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <DashboardCard
-            title="Calculadora de Gastos"
-            description="Controle suas despesas de forma fácil e visual"
-            Icon={Calculator}
-            to="/calculadora"
-            color="finance-blue"
-          />
+          <div data-tutorial="dashboard-expense">
+            <DashboardCard
+              title="Calculadora de Gastos"
+              description="Controle suas despesas de forma fácil e visual"
+              Icon={Calculator}
+              to="/calculadora"
+              color="finance-blue"
+            />
+          </div>
           <DashboardCard
             title="Simulador de Investimentos"
             description="Calcule o rendimento dos seus investimentos"
@@ -219,7 +290,7 @@ const Home = () => {
             </div>
           </Card>
 
-          <Card className="bg-finance-blue/10 dark:bg-slate-600/60 rounded-lg p-4 border-gray-200 dark:border-slate-500/50 lg:col-span-2">
+          <Card data-tutorial="daily-tips" className="bg-finance-blue/10 dark:bg-slate-600/60 rounded-lg p-4 border-gray-200 dark:border-slate-500/50 lg:col-span-2">
             <div className="flex items-start">
               <div className="bg-finance-blue/20 dark:bg-finance-blue/30 p-2 rounded-full shrink-0 mr-3">
                 <TrendingUp className="h-5 w-5 text-finance-blue" />

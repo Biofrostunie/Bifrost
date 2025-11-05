@@ -12,6 +12,7 @@ const UserProfile = () => {
   const { user, loading, getUser, updatePhone } = useUserStore();
   const [isEditingPhone, setIsEditingPhone] = useState(false);
   const [phoneValue, setPhoneValue] = useState("");
+  const [replaying, setReplaying] = useState(false);
 
   useEffect(() => {
     getUser();
@@ -22,6 +23,22 @@ const UserProfile = () => {
       setPhoneValue(user.phone);
     }
   }, [user]);
+
+  const handleReplayTutorial = () => {
+    if (replaying) return;
+    setReplaying(true);
+    try {
+      const keyId = localStorage.getItem('userEmail') || 'anon';
+      const tutorialKey = `app-tutorial-completed:user:${keyId}`;
+      localStorage.removeItem(tutorialKey);
+      window.dispatchEvent(new Event('app:show-tutorial'));
+      toast.success('Tutorial será exibido novamente.');
+    } catch {
+      toast.error('Não foi possível reiniciar o tutorial.');
+    } finally {
+      setTimeout(() => setReplaying(false), 1000);
+    }
+  };
 
   const handleSavePhone = async () => {
     try {
@@ -121,6 +138,11 @@ const UserProfile = () => {
           <p className="text-sm text-finance-gray dark:text-gray-300">
             Membro desde {user?.memberSince || "Carregando..."}
           </p>
+          <div className="mt-2">
+            <Button size="sm" variant="outline" onClick={handleReplayTutorial}>
+              Rever Tutorial
+            </Button>
+          </div>
         </div>
       </div>
     </Card>

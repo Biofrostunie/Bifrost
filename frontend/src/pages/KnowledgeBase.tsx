@@ -22,7 +22,7 @@ const KnowledgeBase = () => {
 
   return (
     <AppLayout title="Base de Conhecimento">
-      <div className="w-full p-4 md:p-0">
+      <div className="w-full p-4 md:p-0" data-tutorial="knowledge-base">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <h1 className="text-2xl font-semibold">Base de Conhecimento Financeira</h1>
           <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">

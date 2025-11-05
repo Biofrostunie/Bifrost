@@ -58,7 +58,7 @@ export default function BankAccountCreate() {
 
   return (
     <AppLayout title="Conta Bancária" showProfile>
-      <div className="w-full max-w-2xl mx-auto">
+      <div className="w-full max-w-2xl mx-auto" data-tutorial="bank-account-create">
         <Card className="p-6">
           <div className="mb-6">
             <h1 className="text-2xl font-bold">Cadastrar Conta Bancária</h1>

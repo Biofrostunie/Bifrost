@@ -53,7 +53,7 @@ const Header = ({ title, showProfile = false }: HeaderProps) => {
       {showProfile && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="w-10 h-10 rounded-full bg-finance-blue/10 flex items-center justify-center hover:bg-finance-blue/20 transition-colors focus:outline-none focus:ring-2 focus:ring-finance-blue/50">
+            <button data-tutorial="profile" className="w-10 h-10 rounded-full bg-finance-blue/10 flex items-center justify-center hover:bg-finance-blue/20 transition-colors focus:outline-none focus:ring-2 focus:ring-finance-blue/50">
               <User className="w-5 h-5 text-finance-blue" />
             </button>
           </DropdownMenuTrigger>
