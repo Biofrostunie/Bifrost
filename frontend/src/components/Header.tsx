@@ -29,10 +29,13 @@ const Header = ({ title, showProfile = false }: HeaderProps) => {
   
   const handleToggleDarkMode = () => {
     console.log("Dark mode toggle clicked");
-    // Aqui você pode adicionar a lógica para alternar modo escuro
-    document.documentElement.classList.toggle('dark');
+    // Alterna a classe e persiste no localStorage
+    const added = document.documentElement.classList.toggle('dark');
+    try {
+      localStorage.setItem('theme', added ? 'dark' : 'light');
+    } catch {}
   };
-  
+
   return (
     <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 sticky top-0 z-10">
       {isMobile ? (
@@ -65,10 +68,10 @@ const Header = ({ title, showProfile = false }: HeaderProps) => {
             <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-600" />
             <DropdownMenuItem 
               onClick={handleLogout}
-              className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-red-600 dark:text-red-400"
+              className="cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               <LogOut className="mr-2 h-4 w-4" />
-              <span>Sair da Conta</span>
+              <span>Sair</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

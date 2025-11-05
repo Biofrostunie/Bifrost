@@ -8,7 +8,7 @@ export const BottomNavigation = () => {
   const isActive = (path: string) => currentPath === path;
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-2 flex justify-around items-center">
+    <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-2 pb-[env(safe-area-inset-bottom)] flex justify-around items-center shadow-sm z-50">
       <Link
         to="/"
         className={`flex flex-col items-center p-2 rounded-lg transition-all duration-200 ${

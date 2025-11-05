@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
 import {
   AreaChart,
   Area,
@@ -24,6 +24,37 @@ interface InvestmentChartProps {
 
 const InvestmentChart = ({ data, type, goalAmount, goalName }: InvestmentChartProps) => {
   const chartContentRef = useRef<HTMLDivElement>(null);
+  const [containerKey, setContainerKey] = useState(0);
+
+  // Force ResponsiveContainer to recompute size when data becomes available
+  // This fixes cases where the chart mounts with zero width in mobile layouts.
+  if (typeof window !== "undefined" && data) {
+    setTimeout(() => {
+      try {
+        window.dispatchEvent(new Event("resize"));
+      } catch {}
+    }, 0);
+  }
+
+  // Observe container resize to trigger ResponsiveContainer recalculation
+  useEffect(() => {
+    const el = chartContentRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      setContainerKey((k) => k + 1);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [chartContentRef, data]);
+
+  // Detect mobile to apply explicit height for ResponsiveContainer
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const update = () => setIsMobile(window.innerWidth < 640);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
 
   const saveSimulation = async () => {
     if (!chartContentRef.current || !data) {
@@ -225,7 +256,6 @@ const InvestmentChart = ({ data, type, goalAmount, goalName }: InvestmentChartPr
       context.font = '18px Arial';
       context.fillStyle = '#6b7280';
       context.fillText('Simulação baseada em renda fixa com juros compostos', canvas.width / 2, 80);
-
       context.fillStyle = '#1f2937';
       context.font = 'bold 24px Arial';
       context.textAlign = 'left';
@@ -336,7 +366,7 @@ const InvestmentChart = ({ data, type, goalAmount, goalName }: InvestmentChartPr
   };
 
   return (
-    <div className="bg-white/80 dark:bg-gray-800/80 rounded-lg p-4 shadow-sm min-h-[400px] overflow-hidden">
+    <div className="bg-white/80 dark:bg-gray-800/80 rounded-lg p-4 shadow-sm min-h-[460px] overflow-hidden">
       {data && (
         <div className="flex justify-end mb-2">
           <Button
@@ -357,62 +387,64 @@ const InvestmentChart = ({ data, type, goalAmount, goalName }: InvestmentChartPr
       >
         {data ? (
           <div className="flex-1 min-h-0">
-            <div className="w-full h-64 overflow-visible relative">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="w-full min-w-0 h-[340px] sm:h-96 md:h-[420px] overflow-visible relative">
+              <ResponsiveContainer key={containerKey} width="100%" height={isMobile ? 340 : '100%'}>
                 <AreaChart
-                  data={data.monthlyBreakdown}
-                  margin={{ top: 10, right: 20, left: 20, bottom: 20 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis
-                    dataKey="month"
-                    tickFormatter={formatXAxis}
-                    fontSize={12}
-                  />
-                  <YAxis
-                    tickFormatter={formatYAxis}
-                    fontSize={12}
-                  />
-                  <Tooltip
-                    content={<CustomTooltip />}
-                    position={{ x: 0, y: 0 }}
-                    wrapperStyle={{ zIndex: 1000, pointerEvents: 'none' }}
-                  />
-                  <Legend
-                    verticalAlign="top"
-                    height={36}
-                    iconType="line"
-                    wrapperStyle={{ paddingBottom: '10px' }}
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="invested"
-                    stackId="1"
-                    stroke="#2196F3"
-                    fill="#2196F3"
-                    name="Total Investido"
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    stackId="2"
-                    stroke="#4CAF50"
-                    fill="#4CAF50"
-                    name="Valor Total"
-                  />
-                  {type === 'goal' && goalAmount && (
-                    <Area
-                      type="monotone"
-                      dataKey={() => goalAmount}
-                      name="Meta"
-                      stroke="#F97316"
-                      strokeDasharray="5 5"
-                      fill="none"
-                    />
-                  )}
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
+                   data={data.monthlyBreakdown}
+                   margin={{ top: 10, right: 16, left: 12, bottom: isMobile ? 28 : 20 }}
+                 >
+                   <CartesianGrid strokeDasharray="3 3" />
+                   <XAxis
+                     dataKey="month"
+                     tickFormatter={formatXAxis}
+                     interval="preserveStartEnd"
+                     tickCount={isMobile ? 5 : 8}
+                     tickMargin={8}
+                     tick={{ fontSize: isMobile ? 13 : 12 }}
+                   />
+                   <YAxis
+                     tickFormatter={formatYAxis}
+                     tick={{ fontSize: isMobile ? 13 : 12 }}
+                   />
+                   <Tooltip
+                     content={<CustomTooltip />}
+                     wrapperStyle={{ zIndex: 1000, pointerEvents: 'none' }}
+                   />
+                   <Legend
+                     verticalAlign="top"
+                     height={36}
+                     iconType="line"
+                     wrapperStyle={{ paddingBottom: '10px' }}
+                   />
+                   <Area
+                     type="monotone"
+                     dataKey="invested"
+                     stackId="1"
+                     stroke="#2196F3"
+                     fill="#2196F3"
+                     name="Total Investido"
+                   />
+                   <Area
+                     type="monotone"
+                     dataKey="value"
+                     stackId="2"
+                     stroke="#4CAF50"
+                     fill="#4CAF50"
+                     name="Valor Total"
+                   />
+                   {type === 'goal' && goalAmount && (
+                     <Area
+                       type="monotone"
+                       dataKey={() => goalAmount}
+                       name="Meta"
+                       stroke="#F97316"
+                       strokeDasharray="5 5"
+                       fill="none"
+                     />
+                   )}
+                 </AreaChart>
+               </ResponsiveContainer>
+             </div>
           </div>
         ) : (
           <div className="h-full flex items-center justify-center text-finance-gray dark:text-gray-300 p-4 text-center">
