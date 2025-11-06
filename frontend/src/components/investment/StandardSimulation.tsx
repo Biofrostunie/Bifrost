@@ -10,6 +10,7 @@ import { Calculator, TrendingUp, Calendar, PlusCircle } from "lucide-react";
 import { toast } from "sonner";
 import { calculateStandardInvestment, SimulationResult } from "./calculationUtils";
 import InvestmentChart from "./InvestmentChart";
+import { NumericFormat } from "react-number-format";
 
 const StandardSimulation = () => {
   const [initialAmount, setInitialAmount] = useState<string>("1000");
@@ -50,15 +51,21 @@ const StandardSimulation = () => {
               <Label htmlFor="initial-amount" className="flex items-center gap-1 text-finance-dark dark:text-white font-medium">
                 <Calculator className="h-4 w-4" /> Valor Inicial (R$)
               </Label>
-              <Input
+              <NumericFormat
                 id="initial-amount"
-                type="number"
-                value={initialAmount}
-                onChange={(e) => setInitialAmount(e.target.value)}
-                placeholder="1000"
-                min="0"
-                step="100"
-                className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                customInput={Input}           // Usa seu componente Input para manter o estilo
+                value={initialAmount}         // Valor controlado pelo estado
+                onValueChange={(values) => {
+                  // Atualiza o estado com o valor numérico puro (sem R$, pontos, etc.)
+                  setInitialAmount(values.value);
+                }}
+                thousandSeparator="."         // Separador de milhar brasileiro
+                decimalSeparator=","          // Separador decimal brasileiro
+                decimalScale={2}              // Fixa em 2 casas decimais
+                fixedDecimalScale={true}      // Garante que sempre mostre as casas (ex: 100,50)
+                prefix="R$ "                  // Adiciona o prefixo de moeda
+                placeholder="R$ 0,00"
+                className="dark:bg-gray-700 dark:border-gray-600 dark:text-white" // Suas classes de estilo originais
               />
             </div>
             
