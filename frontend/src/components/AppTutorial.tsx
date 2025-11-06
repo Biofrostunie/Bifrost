@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { X, ArrowRight, ArrowLeft, ArrowDown, ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -155,6 +155,15 @@ const tutorialSteps: TutorialStep[] = [
     autoClick: true,
   },
   {
+    target: "[data-tutorial='mobile-bank-account']",
+    title: "Conta Bancária",
+    description: "No mobile, use o menu inferior para cadastrar Conta.",
+    position: "top",
+    arrow: "up",
+    mobileOnly: true,
+    autoClick: true,
+  },
+  {
     target: "[data-tutorial='bank-account-create']",
     title: "Preencha os dados da Conta",
     description: "Informe banco, tipo, saldo e moeda. Salve para cadastrar sua conta.",
@@ -168,6 +177,15 @@ const tutorialSteps: TutorialStep[] = [
     position: "right",
     arrow: "right",
     desktopOnly: true,
+    autoClick: true,
+  },
+  {
+    target: "[data-tutorial='mobile-credit-card']",
+    title: "Cartão de Crédito",
+    description: "No mobile, use o menu inferior para cadastrar Cartão.",
+    position: "top",
+    arrow: "up",
+    mobileOnly: true,
     autoClick: true,
   },
   {
@@ -215,6 +233,19 @@ const AppTutorial = ({ onComplete }: AppTutorialProps) => {
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const [show, setShow] = useState(false);
   const [highlightStyle, setHighlightStyle] = useState({ top: 0, left: 0, width: 0, height: 0 });
+  const [cardWidth, setCardWidth] = useState(300);
+  const [cardHeight, setCardHeight] = useState(190);
+  const scrollingRef = useRef(false);
+  const overlayRef = useRef<HTMLDivElement | null>(null);
+  const rAF = useRef<number | null>(null);
+
+  const getBottomSafe = () => {
+    if (!isMobile) return 16;
+    const nav = document.querySelector("[data-tutorial='mobile-nav']") as HTMLElement | null;
+    const navHeight = nav ? nav.getBoundingClientRect().height : 0;
+    // Mínimo de 64px no mobile, usando altura real da BottomNavigation quando presente
+    return Math.max(64, navHeight || 80);
+  };
 
   useEffect(() => {
     const step = tutorialSteps[currentStep];
@@ -232,7 +263,13 @@ const AppTutorial = ({ onComplete }: AppTutorialProps) => {
 
     // Garantir que elementos renderizaram
     const timeout = setTimeout(() => {
-      updatePosition();
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const mobileWidth = Math.min(360, vw - 24);
+      const mobileHeight = 220;
+      setCardWidth(isMobile ? mobileWidth : 300);
+      setCardHeight(isMobile ? mobileHeight : 190);
+      waitForTargetThenPosition();
       setShow(true);
     }, 500);
 
@@ -241,22 +278,81 @@ const AppTutorial = ({ onComplete }: AppTutorialProps) => {
 
   useEffect(() => {
     if (!show) return;
-    const onResize = () => updatePosition();
-    const onScroll = () => updatePosition();
+    const onResize = () => scheduleUpdatePosition();
+    const onScroll = () => scheduleUpdatePosition();
     window.addEventListener("resize", onResize);
     window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("orientationchange", onResize);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", onResize);
+      window.visualViewport.addEventListener("scroll", onScroll);
+    }
     return () => {
       window.removeEventListener("resize", onResize);
       window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("orientationchange", onResize);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", onResize);
+        window.visualViewport.removeEventListener("scroll", onScroll);
+      }
     };
   }, [show, currentStep]);
+
+  // Bloqueia rolagem no fundo enquanto o overlay está ativo, usando listeners não-passivos
+  useEffect(() => {
+    if (!show) return;
+    const el = overlayRef.current;
+    if (!el) return;
+    const handler = (e: Event) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    el.addEventListener("touchmove", handler, { passive: false });
+    el.addEventListener("touchstart", handler, { passive: false });
+    el.addEventListener("wheel", handler, { passive: false });
+    return () => {
+      el.removeEventListener("touchmove", handler as EventListener);
+      el.removeEventListener("touchstart", handler as EventListener);
+      el.removeEventListener("wheel", handler as EventListener);
+    };
+  }, [show]);
+
+  // Em vez de travar o body (pode quebrar position:fixed no iOS),
+  // prevenimos scroll via overlay capturando eventos de roda/toque.
+  const preventScroll = (e: any) => {
+    if (typeof e?.preventDefault === "function") e.preventDefault();
+    if (typeof e?.stopPropagation === "function") e.stopPropagation();
+    return false;
+  };
+
+  const scheduleUpdatePosition = () => {
+    if (rAF.current) cancelAnimationFrame(rAF.current);
+    rAF.current = requestAnimationFrame(() => updatePosition());
+  };
+
+  const waitForTargetThenPosition = () => {
+    const step = tutorialSteps[currentStep];
+    if (!step) return updatePosition();
+    let attempts = 0;
+    const maxAttempts = 8; // ~2.4s com 300ms
+    const tryFind = () => {
+      const el = document.querySelector(step.target);
+      if (el || attempts >= maxAttempts) {
+        updatePosition();
+      } else {
+        attempts++;
+        setTimeout(tryFind, 300);
+      }
+    };
+    tryFind();
+  };
 
   const updatePosition = () => {
     const step = tutorialSteps[currentStep];
     if (!step) return;
     const targetElement = document.querySelector(step.target) as HTMLElement | null;
-    const cardWidth = 300;
-    const cardHeight = 190;
+    const BOTTOM_SAFE = getBottomSafe();
+    const TOP_SAFE = 16;
     if (!targetElement) {
       // Fallback: centraliza o cartão e oculta highlight quando o alvo não existe
       setHighlightStyle({ top: 0, left: 0, width: 0, height: 0 });
@@ -266,7 +362,24 @@ const AppTutorial = ({ onComplete }: AppTutorialProps) => {
       return;
     }
 
-    const rect = targetElement.getBoundingClientRect();
+    let rect = targetElement.getBoundingClientRect();
+
+    // Garantir visibilidade do alvo no mobile considerando a navegação inferior
+    const outOfViewTop = rect.top < TOP_SAFE;
+    const outOfViewBottom = rect.bottom > window.innerHeight - BOTTOM_SAFE;
+    if (isMobile && (outOfViewTop || outOfViewBottom) && !scrollingRef.current) {
+      scrollingRef.current = true;
+      try {
+        targetElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      } catch {}
+      setTimeout(() => {
+        rect = targetElement.getBoundingClientRect();
+        scrollingRef.current = false;
+        // Recalcula após rolagem
+        updatePosition();
+      }, 350);
+      return;
+    }
     let top = 0;
     let left = 0;
 
@@ -282,7 +395,12 @@ const AppTutorial = ({ onComplete }: AppTutorialProps) => {
     // const cardWidth = 300;
     // const cardHeight = 190;
 
-    switch (step.position) {
+    // Adapta posicionamento lateral em telas pequenas para evitar corte
+    const effectivePosition = isMobile && (step.position === "left" || step.position === "right")
+      ? (rect.top > window.innerHeight / 2 ? "top" : "bottom")
+      : step.position;
+
+    switch (effectivePosition) {
       case "top":
         top = rect.top - cardHeight - 30;
         left = rect.left + rect.width / 2 - cardWidth / 2;
@@ -306,9 +424,9 @@ const AppTutorial = ({ onComplete }: AppTutorialProps) => {
     if (left + cardWidth > window.innerWidth - padding) {
       left = window.innerWidth - cardWidth - padding;
     }
-    if (top < padding) top = padding;
-    if (top + cardHeight > window.innerHeight - padding) {
-      top = window.innerHeight - cardHeight - padding;
+    if (top < TOP_SAFE) top = TOP_SAFE;
+    if (top + cardHeight > window.innerHeight - BOTTOM_SAFE) {
+      top = window.innerHeight - cardHeight - BOTTOM_SAFE;
     }
 
     setPosition({ top, left });
@@ -369,7 +487,11 @@ const AppTutorial = ({ onComplete }: AppTutorialProps) => {
   return (
     <>
       {/* Overlay com máscara e destaque */}
-      <div className={`fixed inset-0 z-[1000] transition-opacity duration-300 ${show ? "opacity-100" : "opacity-0"}`} style={{ pointerEvents: show ? "auto" : "none" }}>
+      <div
+        ref={overlayRef}
+        className={`fixed inset-0 z-[1000] transition-opacity duration-300 ${show ? "opacity-100" : "opacity-0"}`}
+        style={{ pointerEvents: show ? "auto" : "none", touchAction: "none" }}
+      >
         <svg className="w-full h-full">
           <defs>
             <mask id="tutorial-mask">
@@ -399,8 +521,8 @@ const AppTutorial = ({ onComplete }: AppTutorialProps) => {
 
       {/* Cartão de instrução */}
       <Card
-        className={`fixed z-[1002] w-[300px] transition-opacity duration-300 ${show ? "opacity-100" : "opacity-0"}`}
-        style={{ top: position.top, left: position.left }}
+        className={`fixed z-[1002] transition-opacity duration-300 ${show ? "opacity-100" : "opacity-0"}`}
+        style={{ top: position.top, left: position.left, width: cardWidth }}
       >
         <div className="p-4">
           <div className="flex items-center justify-between mb-2">

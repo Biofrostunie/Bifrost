@@ -17,7 +17,39 @@ const ProtectedRoute = ({ redirectPath = "/login" }: ProtectedRouteProps) => {
     try {
       const keyId = user?.id || localStorage.getItem('userEmail') || 'anon';
       const tutorialKey = `app-tutorial-completed:user:${keyId}`;
-      const tutorialCompleted = localStorage.getItem(tutorialKey);
+      let tutorialCompleted = localStorage.getItem(tutorialKey);
+
+      // Migração: se a chave nova não existir, tentar detectar chaves antigas baseadas em token
+      if (!tutorialCompleted) {
+        const token = localStorage.getItem('token') || '';
+        const legacyKeys = [
+          `app-tutorial-completed:token:${token}`,
+          `app-tutorial-completed:${token}`,
+          `app-tutorial-completed`,
+        ];
+        // Verificar chaves legadas explicitamente
+        for (const legacyKey of legacyKeys) {
+          if (legacyKey && localStorage.getItem(legacyKey) === 'true') {
+            localStorage.setItem(tutorialKey, 'true');
+            tutorialCompleted = 'true';
+            break;
+          }
+        }
+        // Se ainda não encontrado, varrer localStorage por qualquer chave antiga "app-tutorial-completed:" marcada como true
+        if (!tutorialCompleted) {
+          for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i) || '';
+            if (k.startsWith('app-tutorial-completed:') && !k.includes(':user:')) {
+              if (localStorage.getItem(k) === 'true') {
+                localStorage.setItem(tutorialKey, 'true');
+                tutorialCompleted = 'true';
+                break;
+              }
+            }
+          }
+        }
+      }
+
       if (!tutorialCompleted) {
         const t = setTimeout(() => setShowTutorial(true), 800);
         return () => clearTimeout(t);

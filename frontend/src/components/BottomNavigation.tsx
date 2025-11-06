@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Calculator, BookOpen, TrendingUp, Lightbulb } from "lucide-react";
+import { createPortal } from "react-dom";
+import { Home, Calculator, BookOpen, TrendingUp, Lightbulb, Wallet, CreditCard } from "lucide-react";
 
 export const BottomNavigation = () => {
   const location = useLocation();
@@ -7,8 +8,8 @@ export const BottomNavigation = () => {
 
   const isActive = (path: string) => currentPath === path;
 
-  return (
-    <div data-tutorial="mobile-nav" className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-2 pb-[env(safe-area-inset-bottom)] flex justify-around items-center shadow-sm z-50">
+  const nav = (
+    <div data-tutorial="mobile-nav" className="fixed inset-x-0 bottom-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 p-2 pb-[env(safe-area-inset-bottom)] flex justify-around items-center shadow-sm z-50">
       <Link
         to="/"
         data-tutorial="mobile-home"
@@ -69,6 +70,37 @@ export const BottomNavigation = () => {
         <Lightbulb className="h-6 w-6" />
         <span className="text-xs mt-1">Base</span>
       </Link>
+
+      <Link
+        to="/contas-bancarias/novo"
+        data-tutorial="mobile-bank-account"
+        className={`flex flex-col items-center p-2 rounded-lg transition-all duration-200 ${
+          isActive("/contas-bancarias/novo") 
+            ? "text-finance-blue bg-finance-blue/10" 
+            : "text-finance-gray hover:text-finance-blue hover:bg-finance-blue/5"
+        }`}
+      >
+        <Wallet className="h-6 w-6" />
+        <span className="text-xs mt-1">Conta</span>
+      </Link>
+
+      <Link
+        to="/cartoes/novo"
+        data-tutorial="mobile-credit-card"
+        className={`flex flex-col items-center p-2 rounded-lg transition-all duration-200 ${
+          isActive("/cartoes/novo") 
+            ? "text-finance-blue bg-finance-blue/10" 
+            : "text-finance-gray hover:text-finance-blue hover:bg-finance-blue/5"
+        }`}
+      >
+        <CreditCard className="h-6 w-6" />
+        <span className="text-xs mt-1">Cartão</span>
+      </Link>
     </div>
   );
+
+  if (typeof document !== "undefined") {
+    return createPortal(nav, document.body);
+  }
+  return nav;
 }
