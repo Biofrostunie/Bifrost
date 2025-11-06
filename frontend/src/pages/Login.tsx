@@ -95,7 +95,7 @@ const Login = () => {
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-finance-blue transition-colors" />
                   <Input
                     type="email"
-                    placeholder="TEVE MUDANÇA e-mail"
+                    placeholder="Seu e-mail"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-10 h-12 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-finance-blue/20 transition-all duration-300"
