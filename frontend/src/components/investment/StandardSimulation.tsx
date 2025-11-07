@@ -13,8 +13,8 @@ import InvestmentChart from "./InvestmentChart";
 import { NumericFormat } from "react-number-format";
 
 const StandardSimulation = () => {
-  const [initialAmount, setInitialAmount] = useState<string>("1000");
-  const [monthlyContribution, setMonthlyContribution] = useState<string>("200");
+  const [initialAmount, setInitialAmount] = useState<string>();
+  const [monthlyContribution, setMonthlyContribution] = useState<string>();
   const [interestRate, setInterestRate] = useState<string>("10");
   const [investmentPeriod, setInvestmentPeriod] = useState<string>("12");
   const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null);
@@ -51,21 +51,20 @@ const StandardSimulation = () => {
               <Label htmlFor="initial-amount" className="flex items-center gap-1 text-finance-dark dark:text-white font-medium">
                 <Calculator className="h-4 w-4" /> Valor Inicial (R$)
               </Label>
-              <NumericFormat
+              <NumericFormat                      // Explicação NumericFormat
                 id="initial-amount"
-                customInput={Input}           // Usa seu componente Input para manter o estilo
-                value={initialAmount}         // Valor controlado pelo estado
+                customInput={Input}               // Usa seu componente Input para manter o estilo
+                value={initialAmount}             // Valor controlado pelo estado
                 onValueChange={(values) => {
-                  // Atualiza o estado com o valor numérico puro (sem R$, pontos, etc.)
-                  setInitialAmount(values.value);
+                  setInitialAmount(values.value); // atualiza sem R$, pontos, virgulas, etc
                 }}
-                thousandSeparator="."         // Separador de milhar brasileiro
-                decimalSeparator=","          // Separador decimal brasileiro
-                decimalScale={2}              // Fixa em 2 casas decimais
-                fixedDecimalScale={true}      // Garante que sempre mostre as casas (ex: 100,50)
-                prefix="R$ "                  // Adiciona o prefixo de moeda
+                thousandSeparator="."             // Separador de milhar brasileiro
+                decimalSeparator=","              // Separador decimal brasileiro
+                decimalScale={2}                  // Fixa em 2 casas decimais
+                fixedDecimalScale={true}          // Garante que sempre mostre as casas (ex: 100,50)
+                prefix="R$ "                      // Adiciona o prefixo de moeda
                 placeholder="R$ 0,00"
-                className="dark:bg-gray-700 dark:border-gray-600 dark:text-white" // Suas classes de estilo originais
+                className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
             </div>
             
@@ -73,14 +72,19 @@ const StandardSimulation = () => {
               <Label htmlFor="monthly-contribution" className="flex items-center gap-1 text-finance-dark dark:text-white font-medium">
                 <PlusCircle className="h-4 w-4" /> Contribuição Mensal (R$)
               </Label>
-              <Input
+              <NumericFormat
                 id="monthly-contribution"
-                type="number"
-                value={monthlyContribution}
-                onChange={(e) => setMonthlyContribution(e.target.value)}
-                placeholder="200"
-                min="0"
-                step="50"
+                customInput={Input}                     
+                value={monthlyContribution}             
+                onValueChange={(values) => {
+                  setMonthlyContribution(values.value); 
+                }}
+                thousandSeparator="."                   
+                decimalSeparator=","                    
+                decimalScale={2}                        
+                fixedDecimalScale={true}                
+                prefix="R$ "                            
+                placeholder="R$ 0,00"
                 className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
             </div>
@@ -90,15 +94,18 @@ const StandardSimulation = () => {
                 <TrendingUp className="h-4 w-4" /> Taxa de Juros ao Ano (%)
               </Label>
               <div className="space-y-2">
-                <Input
+                <NumericFormat
                   id="interest-rate"
-                  type="number"
-                  value={interestRate}
-                  onChange={(e) => setInterestRate(e.target.value)}
+                  customInput={Input}                     
+                  value={interestRate}             
+                  onValueChange={(values) => {
+                    setInterestRate(values.value); 
+                  }}
+                  thousandSeparator="."                   
+                  decimalSeparator=","                    
+                  decimalScale={1}                        
+                  fixedDecimalScale={true}                
                   placeholder="10"
-                  min="0"
-                  max="100"
-                  step="0.1"
                   className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 />
                 <Slider

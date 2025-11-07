@@ -10,12 +10,13 @@ import { Calculator, TrendingUp, Target, PlusCircle, Clock } from "lucide-react"
 import { toast } from "sonner";
 import { calculateGoalInvestment, GoalSimulationResult } from "./calculationUtils";
 import InvestmentChart from "./InvestmentChart";
+import { NumericFormat } from "react-number-format";
 
 const GoalSimulation = () => {
-  const [goalName, setGoalName] = useState<string>("");
-  const [goalAmount, setGoalAmount] = useState<string>("10000");
-  const [goalInitialAmount, setGoalInitialAmount] = useState<string>("1000");
-  const [goalMonthlyContribution, setGoalMonthlyContribution] = useState<string>("200");
+  const [goalName, setGoalName] = useState<string>();
+  const [goalAmount, setGoalAmount] = useState<string>();
+  const [goalInitialAmount, setGoalInitialAmount] = useState<string>();
+  const [goalMonthlyContribution, setGoalMonthlyContribution] = useState<string>();
   const [goalInterestRate, setGoalInterestRate] = useState<string>("10");
   const [goalSimulationResult, setGoalSimulationResult] = useState<GoalSimulationResult | null>(null);
 
@@ -74,15 +75,20 @@ const GoalSimulation = () => {
               <Label htmlFor="goal-amount" className="flex items-center gap-1 text-finance-dark dark:text-white font-medium">
                 <Target className="h-4 w-4" /> Valor da Meta (R$)
               </Label>
-              <Input
-                id="goal-amount"
-                type="number"
-                value={goalAmount}
-                onChange={(e) => setGoalAmount(e.target.value)}
-                placeholder="10000"
-                min="0"
-                step="1000"
-                className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              <NumericFormat                        // Explicação NumericFormat
+                  id="goal-amount"
+                  customInput={Input}               // Usa seu componente Input para manter o estilo
+                  value={goalAmount}                // Valor controlado pelo estado
+                  onValueChange={(values) => {
+                    setGoalAmount(values.value);    // atualiza sem R$, pontos, virgulas, etc
+                  }}
+                  thousandSeparator="."             // Separador de milhar brasileiro
+                  decimalSeparator=","              // Separador decimal brasileiro
+                  decimalScale={2}                  // Fixa em 2 casas decimais
+                  fixedDecimalScale={true}          // Garante que sempre mostre as casas (ex: 100,50)
+                  prefix="R$ "                      // Adiciona o prefixo de moeda
+                  placeholder="RS 10000"
+                  className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
             </div>
             
@@ -90,15 +96,20 @@ const GoalSimulation = () => {
               <Label htmlFor="goal-initial-amount" className="flex items-center gap-1 text-finance-dark dark:text-white font-medium">
                 <Calculator className="h-4 w-4" /> Valor Inicial (R$)
               </Label>
-              <Input
-                id="goal-initial-amount"
-                type="number"
-                value={goalInitialAmount}
-                onChange={(e) => setGoalInitialAmount(e.target.value)}
-                placeholder="1000"
-                min="0"
-                step="100"
-                className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              <NumericFormat                       
+                  id="goal-initial-amount"
+                  customInput={Input}               
+                  value={goalInitialAmount}                
+                  onValueChange={(values) => {
+                    setGoalInitialAmount(values.value);    
+                  }}
+                  thousandSeparator="."             
+                  decimalSeparator=","              
+                  decimalScale={2}                  
+                  fixedDecimalScale={true}          
+                  prefix="R$ "                      
+                  placeholder="RS 1000"
+                  className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
             </div>
             
@@ -106,15 +117,20 @@ const GoalSimulation = () => {
               <Label htmlFor="goal-monthly-contribution" className="flex items-center gap-1 text-finance-dark dark:text-white font-medium">
                 <PlusCircle className="h-4 w-4" /> Contribuição Mensal (R$)
               </Label>
-              <Input
-                id="goal-monthly-contribution"
-                type="number"
-                value={goalMonthlyContribution}
-                onChange={(e) => setGoalMonthlyContribution(e.target.value)}
-                placeholder="200"
-                min="0"
-                step="50"
-                className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              <NumericFormat                       
+                  id="goal-monthly-contribution"
+                  customInput={Input}               
+                  value={goalMonthlyContribution}                
+                  onValueChange={(values) => {
+                    setGoalMonthlyContribution(values.value);    
+                  }}
+                  thousandSeparator="."             
+                  decimalSeparator=","              
+                  decimalScale={2}                  
+                  fixedDecimalScale={true}          
+                  prefix="R$ "                      
+                  placeholder="RS 200" 
+                  className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
             </div>
             
@@ -123,15 +139,20 @@ const GoalSimulation = () => {
                 <TrendingUp className="h-4 w-4" /> Taxa de Juros ao Ano (%)
               </Label>
               <div className="space-y-2">
-                <Input
+                <NumericFormat                       
                   id="goal-interest-rate"
-                  type="number"
-                  value={goalInterestRate}
-                  onChange={(e) => setGoalInterestRate(e.target.value)}
-                  placeholder="10"
-                  min="0"
-                  max="100"
-                  step="0.1"
+                  customInput={Input}               
+                  value={goalInterestRate}                
+                  onValueChange={(values) => {
+                    setGoalInterestRate(values.value);    
+                  }}
+                  thousandSeparator="."             
+                  decimalSeparator=","              
+                  decimalScale={1}                  
+                  fixedDecimalScale={true}          
+                  placeholder="10" 
+                  min={0}
+                  max={100}
                   className="dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                 />
                 <Slider
