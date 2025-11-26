@@ -33,6 +33,17 @@ const Login = () => {
     }
   }, [error, toast, clearError]);
 
+  // // Remove o foco de qualquer botão ativo ao entrar na tela de login | Erro do "enter" que retornava para tela de recupar senha
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     const active = document.activeElement as HTMLElement | null;
+  //     if (active && (active.tagName === "BUTTON" || active.tagName === "A")) {
+  //       active.blur();
+  //     }
+  //   }, 10); // espera o render terminar
+  //   return () => clearTimeout(timer);
+  // }, []);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -105,6 +116,7 @@ const Login = () => {
                 </div>
                 <div className="flex justify-end">
                   <Button
+                    type="button"
                     variant="link"
                     className="text-sm text-gray-600 hover:text-finance-blue dark:text-gray-400 p-0 h-auto"
                     onClick={() => navigate("/recuperar-senha")}

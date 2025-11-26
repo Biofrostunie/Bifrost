@@ -66,7 +66,7 @@ export async function seedUsers() {
             const profile = {
                 id: uuid(),
                 userId: user.id,
-                monthlyIncome: parseFloat(faker.finance.amount(1500, 20000, 2)),
+                monthlyIncome: parseFloat(faker.finance.amount({min: 1500, max: 20000, dec: 2})),
                 financialGoals: [faker.lorem.word(), faker.lorem.word()],
                 risk: faker.helpers.arrayElement(['baixo', 'moderado', 'alto']),
             };
@@ -90,7 +90,7 @@ export async function seedUsers() {
                     id: uuid(),
                     userId: user.id,
                     description: faker.commerce.productName(),
-                    amount: parseFloat(faker.finance.amount(10, 2000, 2)),
+                    amount: parseFloat(faker.finance.amount({min: 10, max: 2000, dec: 2})),
                     category: faker.helpers.arrayElement(['Alimentação','Transporte','Lazer','Saúde','Educação','Moradia']),
                     date: faker.date.recent({ days: 180 }),
                     essential: faker.datatype.boolean(),
@@ -113,7 +113,7 @@ export async function seedUsers() {
                     id: uuid(),
                     userId: user.id,
                     source: faker.company.name(),
-                    amount: parseFloat(faker.finance.amount(1000, 20000, 2)),
+                    amount: parseFloat(faker.finance.amount({min: 1000, max: 20000, dec: 2})),
                     recurrent: faker.datatype.boolean(),
                 };
 
@@ -189,9 +189,9 @@ export async function seedUsers() {
                     [
                         uuid(),
                         user.id,
-                        parseFloat(faker.finance.amount(1000,50000,2)),
-                        parseFloat(faker.finance.amount(100,5000,2)),
-                        parseFloat(faker.finance.amount(3,15,2)),
+                        parseFloat(faker.finance.amount({min:1000, max:50000, dec:2})),
+                        parseFloat(faker.finance.amount({min:100,max:5000, dec:2})),
+                        parseFloat(faker.finance.amount({min:3, max:15, dec:2})),
                         faker.datatype.number({min:12,max:240}),
                         faker.lorem.words(3)
                     ]
