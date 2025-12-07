@@ -8,6 +8,7 @@ import { UsersService } from '../../users/services/users.service';
 import { CacheService } from '../../redis/cache.service';
 import { Cache } from '../../redis/decorators/cache.decorator';
 import { PaymentMethod } from '@/common/enums/payment-method.enum';
+import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
 export class ExpensesService {
@@ -18,6 +19,7 @@ export class ExpensesService {
     private readonly pdfService: PdfService,
     private readonly usersService: UsersService,
     private readonly cacheService: CacheService,
+    private readonly prisma: PrismaService,
   ) {}
 
   @Cache({ ttl: 300, prefix: 'expenses' }) // Cache for 5 minutes
@@ -40,7 +42,7 @@ export class ExpensesService {
       throw new BadRequestException('bankAccountId is required when paymentMethod is BANK_ACCOUNT');
     }
     
-    const expense = await this.expensesRepository.create({
+    const expense = await this.expensesRepository.createWithBankDebit({
       ...createExpenseDto,
       userId,
     });

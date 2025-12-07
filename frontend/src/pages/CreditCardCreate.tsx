@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import { formatCurrency } from "@/lib/formatters";
 
 const schema = z.object({
   issuer: z.string().min(1, "Emissor é obrigatório"),
@@ -41,6 +42,9 @@ export default function CreditCardCreate() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [accounts, setAccounts] = useState<BankAccountOption[]>([]);
+  const [cards, setCards] = useState<Array<{ id: string; issuer: string; alias?: string; last4?: string; limit?: number; currentBalance?: number }>>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingLimit, setEditingLimit] = useState<string>("");
   const {
     register,
     handleSubmit,
@@ -63,6 +67,10 @@ export default function CreditCardCreate() {
         console.error(err);
         toast({ title: "Erro", description: "Falha ao carregar contas bancárias", variant: "destructive" });
       });
+    // Carregar cartões existentes para permitir edição de limite
+    apiFetch("/credit-cards", { token })
+      .then((res) => setCards(res?.data ?? []))
+      .catch(() => {});
   }, [toast]);
 
   const onSubmit = async (values: FormValues) => {
@@ -74,9 +82,32 @@ export default function CreditCardCreate() {
         token,
       });
       toast({ title: "Sucesso", description: "Cartão criado com sucesso!" });
+      // Recarregar lista de cartões após criar
+      try {
+        const token = localStorage.getItem("token");
+        const res = await apiFetch("/credit-cards", { token });
+        setCards(res?.data ?? []);
+      } catch {}
       navigate("/", { replace: true });
     } catch (err) {
       toast({ title: "Erro", description: (err as Error).message || "Falha ao criar cartão", variant: "destructive" });
+    }
+  };
+
+  const saveLimit = async () => {
+    if (!editingId) return;
+    const value = Number(editingLimit);
+    if (isNaN(value)) return;
+    // Otimista
+    setCards((prev) => prev.map((c) => c.id === editingId ? { ...c, limit: value } : c));
+    try {
+      const token = localStorage.getItem("token");
+      await apiFetch(`/credit-cards/${editingId}`, { method: "PUT", token, body: JSON.stringify({ limit: value }) });
+      const res = await apiFetch("/credit-cards", { token });
+      setCards(res?.data ?? []);
+    } finally {
+      setEditingId(null);
+      setEditingLimit("");
     }
   };
 
@@ -158,6 +189,37 @@ export default function CreditCardCreate() {
               <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Salvando..." : "Salvar"}</Button>
             </div>
           </form>
+        </Card>
+        {/* Meus Cartões: edição de limite (sem saldo) */}
+        <Card className="p-6 mt-6">
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold">Meus Cartões</h2>
+            <p className="text-sm text-muted-foreground">Edite apenas o limite dos cartões cadastrados.</p>
+          </div>
+          <div className="space-y-3">
+            {cards.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nenhum cartão cadastrado.</p>
+            ) : (
+              cards.map((cc) => (
+                <div key={cc.id} className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span>{(cc.alias || cc.issuer) + (cc.last4 ? ` •••• ${cc.last4}` : '')}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-muted-foreground">Limite: {formatCurrency(Number(cc.limit ?? 0))}</span>
+                      <Button variant="outline" size="sm" onClick={() => { setEditingId(cc.id); setEditingLimit(cc.limit != null ? String(cc.limit) : ""); }}>Editar limite</Button>
+                    </div>
+                  </div>
+                  {editingId === cc.id && (
+                    <div className="flex items-center gap-2">
+                      <Input type="number" min="0" step="0.01" value={editingLimit} onChange={(e) => setEditingLimit(e.target.value)} placeholder="Novo limite" />
+                      <Button size="sm" onClick={saveLimit}>Salvar</Button>
+                      <Button size="sm" variant="secondary" onClick={() => { setEditingId(null); setEditingLimit(""); }}>Cancelar</Button>
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
         </Card>
       </div>
     </AppLayout>

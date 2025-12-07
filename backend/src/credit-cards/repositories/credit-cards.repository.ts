@@ -40,6 +40,7 @@ export class CreditCardsRepository {
   async update(id: string, data: UpdateCreditCardDto) {
     const updateData: any = { ...data };
     if (data.limit !== undefined) updateData.limit = new Decimal(data.limit);
+    if (data.currentBalance !== undefined) updateData.currentBalance = new Decimal(data.currentBalance);
 
     return this.prisma.creditCard.update({
       where: { id },

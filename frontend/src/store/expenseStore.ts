@@ -60,6 +60,20 @@ export const useExpenseStore = create<ExpenseStore>((set, get) => ({
         amount: typeof created?.amount === 'number' ? created.amount : parseFloat(created?.amount ?? '0'),
       };
       set({ expenses: [...get().expenses, newExpense], loading: false });
+
+      // Emit custom event to refresh bank accounts when a debit expense is created
+      try {
+        const detail = {
+          paymentMethod: newExpense.paymentMethod,
+          bankAccountId: (newExpense as any).bankAccountId,
+          amount: Number(newExpense.amount)
+        };
+        if (detail.paymentMethod === 'BANK_ACCOUNT' && detail.bankAccountId) {
+          window.dispatchEvent(new CustomEvent('bank-accounts:expense', { detail }));
+        }
+      } catch (_) {
+        // ignore event dispatch errors
+      }
     } catch (error) {
       set({ error: error instanceof Error ? error.message : 'Erro ao adicionar despesa', loading: false });
       throw error;

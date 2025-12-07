@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import { useEffect, useState } from "react";
+import { formatCurrency } from "@/lib/formatters";
 
 const schema = z.object({
   bankName: z.string().min(1, "Banco é obrigatório"),
@@ -27,6 +29,9 @@ type FormValues = z.infer<typeof schema>;
 export default function BankAccountCreate() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [accounts, setAccounts] = useState<Array<{ id: string; bankName: string; alias?: string; balance?: number }>>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingBalance, setEditingBalance] = useState<string>("");
   const {
     register,
     handleSubmit,
@@ -50,9 +55,42 @@ export default function BankAccountCreate() {
         token,
       });
       toast({ title: "Sucesso", description: "Conta bancária criada com sucesso!" });
+      // Recarregar lista de contas após criar
+      try {
+        const token = localStorage.getItem("token");
+        const res = await apiFetch("/bank-accounts", { token });
+        setAccounts(res?.data ?? []);
+      } catch {}
       navigate("/", { replace: true });
     } catch (err) {
       toast({ title: "Erro", description: (err as Error).message || "Falha ao criar conta", variant: "destructive" });
+    }
+  };
+
+  useEffect(() => {
+    // Carregar contas existentes para permitir edição de saldo aqui
+    const token = localStorage.getItem("token");
+    apiFetch("/bank-accounts", { token })
+      .then((res) => setAccounts(res?.data ?? []))
+      .catch(() => {});
+  }, []);
+
+  const saveBalance = async () => {
+    if (!editingId) return;
+    const value = Number(editingBalance);
+    if (isNaN(value)) return;
+    // Otimista
+    setAccounts((prev) => prev.map((a) => a.id === editingId ? { ...a, balance: value } : a));
+    try {
+      const token = localStorage.getItem("token");
+      await apiFetch(`/bank-accounts/${editingId}`,
+        { method: "PUT", token, body: JSON.stringify({ balance: value }) }
+      );
+      const res = await apiFetch("/bank-accounts", { token });
+      setAccounts(res?.data ?? []);
+    } finally {
+      setEditingId(null);
+      setEditingBalance("");
     }
   };
 
@@ -117,6 +155,38 @@ export default function BankAccountCreate() {
               <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Salvando..." : "Salvar"}</Button>
             </div>
           </form>
+        </Card>
+
+        {/* Minhas Contas: edição de saldo */}
+        <Card className="p-6 mt-6">
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold">Minhas Contas</h2>
+            <p className="text-sm text-muted-foreground">Edite o saldo atual das contas cadastradas.</p>
+          </div>
+          <div className="space-y-3">
+            {accounts.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Nenhuma conta cadastrada.</p>
+            ) : (
+              accounts.map((acc) => (
+                <div key={acc.id} className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span>{acc.alias ? `${acc.alias} (${acc.bankName})` : acc.bankName}</span>
+                    <div className="flex items-center gap-3">
+                      {acc.balance != null && <span className="text-muted-foreground">{formatCurrency(Number(acc.balance))}</span>}
+                      <Button variant="outline" size="sm" onClick={() => { setEditingId(acc.id); setEditingBalance(acc.balance != null ? String(acc.balance) : ""); }}>Editar saldo</Button>
+                    </div>
+                  </div>
+                  {editingId === acc.id && (
+                    <div className="flex items-center gap-2">
+                      <Input type="number" step="0.01" min="0" value={editingBalance} onChange={(e) => setEditingBalance(e.target.value)} placeholder="Saldo atual" />
+                      <Button size="sm" onClick={saveBalance}>Salvar</Button>
+                      <Button size="sm" variant="secondary" onClick={() => { setEditingId(null); setEditingBalance(""); }}>Cancelar</Button>
+                    </div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
         </Card>
       </div>
     </AppLayout>
