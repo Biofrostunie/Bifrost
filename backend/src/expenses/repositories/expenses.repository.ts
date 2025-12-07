@@ -4,6 +4,7 @@ import { CreateExpenseDto } from '../dto/create-expense.dto';
 import { UpdateExpenseDto } from '../dto/update-expense.dto';
 import { GetExpensesQueryDto } from '../dto/get-expenses-query.dto';
 import { Decimal } from '@prisma/client/runtime/library';
+import { PaymentMethod } from '@prisma/client';
 
 @Injectable()
 export class ExpensesRepository {
@@ -18,6 +19,30 @@ export class ExpensesRepository {
         amount: new Decimal(data.amount),
         date: new Date(data.date),
       },
+    });
+  }
+
+  // Cria despesa e, se for pagamento via conta bancária, debita o saldo da conta vinculada, tudo em transação
+  async createWithBankDebit(data: CreateExpenseDto & { userId: string }) {
+    return this.prisma.$transaction(async (tx) => {
+      const expense = await tx.expense.create({
+        data: {
+          ...data,
+          amount: new Decimal(data.amount),
+          date: new Date(data.date),
+        },
+      });
+
+      if (data.paymentMethod === PaymentMethod.BANK_ACCOUNT && data.bankAccountId) {
+        await tx.bankAccount.update({
+          where: { id: data.bankAccountId },
+          data: {
+            balance: { decrement: new Decimal(data.amount) },
+          },
+        });
+      }
+
+      return expense;
     });
   }
 

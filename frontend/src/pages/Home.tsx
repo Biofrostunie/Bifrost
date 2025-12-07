@@ -6,13 +6,14 @@ import InvestorProfileDialog from "@/components/InvestorProfileDialog";
 import { getCurrentTip } from "@/data/finacialTips";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Calculator, BookOpen, TrendingUp, DollarSign, Heart, Target, Wallet, CreditCard } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { formatCurrency } from "@/lib/formatters";
 
 // Tipos para novos painéis de contas/cartões
 type BankAccount = { id: string; bankName: string; alias?: string; balance?: number; currency?: string };
-type CreditCardType = { id: string; issuer: string; alias?: string; last4?: string; limit?: number };
+type CreditCardType = { id: string; issuer: string; alias?: string; last4?: string; limit?: number; currentBalance?: number };
 type ExpenseType = { id: string; amount: number; paymentMethod?: string; creditCardId?: string };
 
 const Home = () => {
@@ -115,6 +116,30 @@ const Home = () => {
     apiFetch('/expenses', { token }).then(res => setExpenses(res?.data ?? [])).catch(() => {});
   }, []);
 
+  // Atualizar contas bancárias ao criar despesa no débito
+  useEffect(() => {
+    const handler = (e: any) => {
+      const detail = e?.detail || {};
+      const { paymentMethod, bankAccountId, amount } = detail;
+      if (paymentMethod === 'BANK_ACCOUNT' && bankAccountId) {
+        // Atualização otimista do saldo
+        setBankAccounts((prev) => prev.map((acc) => (
+          acc.id === bankAccountId
+            ? { ...acc, balance: Number(acc.balance ?? 0) - Number(amount ?? 0) }
+            : acc
+        )));
+
+        // Revalidar com API para refletir valor persistido
+        const token = localStorage.getItem('token');
+        apiFetch('/bank-accounts', { token })
+          .then((res) => setBankAccounts(res?.data ?? []))
+          .catch(() => {});
+      }
+    };
+    window.addEventListener('bank-accounts:expense', handler);
+    return () => window.removeEventListener('bank-accounts:expense', handler);
+  }, []);
+
   const handleProfileComplete = async (profile: string) => {
     const token = localStorage.getItem('token') || 'anon';
     const profileKey = `investor-profile:${token}`;
@@ -151,6 +176,8 @@ const Home = () => {
     }
     return byCard;
   }, [expenses]);
+
+  // Edição (saldo/limite) removida do Dashboard; agora disponível nas telas de cadastro
 
   return (
     <AppLayout title="Dashboard" showProfile>
@@ -194,9 +221,14 @@ const Home = () => {
                 <p className="text-sm text-gray-600 dark:text-gray-300">Nenhuma conta cadastrada</p>
               ) : (
                 bankAccounts.map((acc) => (
-                  <div key={acc.id} className="flex justify-between text-sm">
-                    <span className="dark:text-white">{acc.alias ? `${acc.alias} (${acc.bankName})` : acc.bankName}</span>
-                    {acc.balance != null && <span className="text-gray-600 dark:text-gray-300">{formatCurrency(Number(acc.balance))}</span>}
+                  <div key={acc.id} className="space-y-1">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="dark:text-white">{acc.alias ? `${acc.alias} (${acc.bankName})` : acc.bankName}</span>
+                      <div className="flex items-center gap-2">
+                        {acc.balance != null && <span className="text-gray-600 dark:text-gray-300">{formatCurrency(Number(acc.balance))}</span>}
+                      </div>
+                    </div>
+                    {/* Edição removida; use a tela de cadastro para alterar saldo */}
                   </div>
                 ))
               )}
@@ -220,7 +252,10 @@ const Home = () => {
                     <div key={cc.id} className="p-3 rounded-md border border-gray-200 dark:border-slate-500/50">
                       <div className="flex justify-between text-sm mb-2">
                         <span className="dark:text-white">{(cc.alias || cc.issuer) + (cc.last4 ? ` •••• ${cc.last4}` : '')}</span>
-                        <span className="text-gray-600 dark:text-gray-300">Limite: {formatCurrency(Number(limit))}</span>
+                        <div className="flex items-center gap-3">
+                          <span className="text-gray-600 dark:text-gray-300">Saldo: {formatCurrency(Number(cc.currentBalance ?? 0))}</span>
+                          <span className="text-gray-600 dark:text-gray-300">Limite: {formatCurrency(Number(limit))}</span>
+                        </div>
                       </div>
                       <div className="h-2 bg-gray-200 dark:bg-slate-600 rounded">
                         <div className="h-2 bg-finance-blue rounded" style={{ width: `${pct}%` }} />
@@ -229,6 +264,7 @@ const Home = () => {
                         <span>Utilizado: {formatCurrency(used)}</span>
                         <span>{pct}%</span>
                       </div>
+                      {/* Edição removida; use a tela de cadastro para alterar limite */}
                     </div>
                   );
                 })

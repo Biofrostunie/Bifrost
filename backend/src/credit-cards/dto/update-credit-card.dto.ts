@@ -31,6 +31,13 @@ export class UpdateCreditCardDto {
   @IsNumber()
   limit?: number;
 
+  @ApiPropertyOptional({ description: 'Current balance' })
+  @Type(() => Number)
+  @Min(0)
+  @IsOptional()
+  @IsNumber()
+  currentBalance?: number;
+
   @ApiPropertyOptional({ description: 'Statement day of month' })
   @Type(() => Number)
   @IsOptional()
